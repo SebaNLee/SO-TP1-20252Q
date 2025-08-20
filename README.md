@@ -1,7 +1,9 @@
 
 Para inicializar contenedor de Docker:
- ```./docker.sh``` 
+    ```./docker.sh``` 
 
+Luego, en el contenedor:
+    ```cd root```
 
 
 Correr con binario de cátedra:
