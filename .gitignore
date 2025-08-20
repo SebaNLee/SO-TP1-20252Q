@@ -4,5 +4,12 @@
 .bash_history
 
 
-# ignorar binarios
+# binarios
+/bin
+
+
+
+
+# objetos
 *.o
+
