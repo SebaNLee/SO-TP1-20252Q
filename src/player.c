@@ -1,5 +1,3 @@
-
-
-void borrar1(){
-    return;
+int main(){
+    return 0;
 }
