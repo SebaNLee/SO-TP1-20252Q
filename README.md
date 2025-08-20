@@ -4,3 +4,6 @@ Para inicializar contenedor de Docker:
 
 
 
+Correr con binario de cátedra:
+    ```./ChompChamps_x86-64 -v ./bin/view -p ./bin/player``` 
+

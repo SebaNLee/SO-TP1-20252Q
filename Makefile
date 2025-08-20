@@ -11,23 +11,23 @@ BIN_DIR = bin
 SRC = $(wildcard $(SRC_DIR)/*.c)
 
 # .o
-OBJ = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%.o,$(SRC))
+BINARIES = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%,$(SRC))
 
 
 # crear carpeta bin si no existe
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-# .o de cada .c en /bin
-$(BIN_DIR)/%.o: $(SRC_DIR)/%.c | $(BIN_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+# crear binarios individuales
+$(BIN_DIR)/%: $(SRC_DIR)/%.c | $(BIN_DIR)
+	$(CC) $(CFLAGS) $< -o $@
 
 
 
 # reglas
 .PHONY: all clean
 
-all: $(OBJ)
+all: $(BINARIES)
 
 clean:
 	rm -rf $(BIN_DIR)/*
