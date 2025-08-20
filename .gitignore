@@ -2,3 +2,7 @@
 
 # del Docker
 .bash_history
+
+
+# ignorar binarios
+*.o
