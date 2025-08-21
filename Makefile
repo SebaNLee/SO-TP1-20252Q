@@ -1,33 +1,36 @@
-
 # compilador y flags
 CC = gcc
 CFLAGS = -Wall -pedantic -Isrc/include
 
 # directorios
 SRC_DIR = src
+LIB_DIR =libs
 BIN_DIR = bin
 
-# .c
-SRC = $(wildcard $(SRC_DIR)/*.c)
+# fuentes comunes (sin main)
+COMMON = $(SRC_DIR)/$(LIB_DIR)/parameters.c
 
-# .o
-BINARIES = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%,$(SRC))
-
+# ejecutables
+TARGETS = $(BIN_DIR)/master $(BIN_DIR)/player $(BIN_DIR)/view
 
 # crear carpeta bin si no existe
 $(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+	@mkdir -p $(BIN_DIR)
 
-# crear binarios individuales
-$(BIN_DIR)/%: $(SRC_DIR)/%.c | $(BIN_DIR)
-	$(CC) $(CFLAGS) $< -o $@
+# reglas para cada ejecutable
+$(BIN_DIR)/master: $(SRC_DIR)/master.c $(COMMON) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
 
+$(BIN_DIR)/player: $(SRC_DIR)/player.c $(COMMON) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
 
+$(BIN_DIR)/view: $(SRC_DIR)/view.c $(COMMON) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
 
-# reglas
+# reglas principales
 .PHONY: all clean
 
-all: $(BINARIES)
+all: $(TARGETS)
 
 clean:
 	rm -rf $(BIN_DIR)/*
