@@ -10,7 +10,7 @@ int main() {
     // TODO BORRAR, esto es para testear acceso a memoria compartida
 
 
-
+    // TODO mover y crear esto en librería (abrir memoria compartida de GameState y GameSync)
     // game_state
     int fd_state = shm_open("/game_state", O_RDONLY, 0);
     if (fd_state == -1) {
@@ -23,6 +23,20 @@ int main() {
         perror("mmap /game_state");
         exit(1);
     }
+
+    // game_state
+    int fd_sync = shm_open("/game_sync", O_RDONLY, 0);
+    if (fd_sync == -1) {
+        perror("shm_open /game_sync");
+        exit(1);
+    }
+
+    GameSync *sync = mmap(NULL, sizeof(GameSync), PROT_READ, MAP_SHARED, fd_sync, 0);
+    if (sync == MAP_FAILED) {
+        perror("mmap /game_sync");
+        exit(1);
+    }
+
 
     
 
@@ -40,18 +54,6 @@ int main() {
 
 
 
-    // game_state
-    int fd_sync = shm_open("/game_sync", O_RDONLY, 0);
-    if (fd_sync == -1) {
-        perror("shm_open /game_sync");
-        exit(1);
-    }
-
-    GameSync *sync = mmap(NULL, sizeof(GameSync), PROT_READ, MAP_SHARED, fd_sync, 0);
-    if (sync == MAP_FAILED) {
-        perror("mmap /game_sync");
-        exit(1);
-    }
 
 
 
