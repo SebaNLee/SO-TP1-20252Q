@@ -7,6 +7,10 @@
 #define BLUE    "\033[44m"
 #define MAGENTA "\033[45m"
 #define CYAN    "\033[46m"
+#define WHITE   "\033[47m"
+#define BRIGHT_BLUE     "\033[104m"
+#define BRIGHT_MAGENTA   "\033[105m"
+
 
 void printHeader(int columns) {
         int counter = 1;
@@ -19,11 +23,14 @@ void printHeader(int columns) {
 
 void printTableContent(GameState * state) {
 
-    const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN};
+    const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BRIGHT_BLUE, BRIGHT_MAGENTA};
 
     int height = state->height;
     int width = state->width;
+    int numPlayers = state->numPlayers;
     int * board = state->board;
+    Player * players = state->players;
+    
     
     printHeader(width);
     
@@ -32,14 +39,19 @@ void printTableContent(GameState * state) {
         for (int j = 0; j < width; j++) {
             
             int val = board[i * width + j];
-
-            // TODO, acceder al array de Players para obtener la jugada actual (e imprimir como una cabeza) 🦆
-            if(val <= 0)
-            {
-                printf("║%s   %s", colors[abs(val)], RESET); // TODO expandir vector de colores a jugadores máximos
+            char isHead = 0;
+            for (int p = 0; p < numPlayers; p++) {
+                if (players[p].x == j && players[p].y == i)
+                    isHead = 1;
             }
-            else
-            {
+
+            if(val <= 0) {
+                if (isHead) {
+                    printf("║%s🦆 %s", colors[abs(val)], RESET);
+                } else {
+                    printf("║%s   %s", colors[abs(val)], RESET); 
+                }
+            } else {
                 printf("║ %d ", val);
             }
 
