@@ -13,6 +13,9 @@ int main() {
     GameSync * sync = getGameSync();
 
 
+    //sem_wait(&sync->A);
+
+
 
     // TODO BORRAR, esto es para testear acceso a memoria compartida
     printf("Número de jugadores: %u\n", state->numPlayers);
@@ -23,18 +26,28 @@ int main() {
     printf("\n");
     printf("\n");
     printf("###  validMoves P1: %d    ###\n", state->players[0].validMoves);
-    printf("###  invalidMoves P1: %d  ###\n", state->players[0].validMoves);
+    printf("###  invalidMoves P1: %d  ###\n", state->players[0].invalidMoves);
     printf("\n");
 
+    
+    printf("%p\n", (void *) state->board);
+    printf("\n");
+    
+    
+    for(int i = 0; i < state->height; i++)
+    {
+        for(int j = 0; j < state->width; j++)
+        {
+            printf(" %d ", state->board[i * state->width + j]);
+        }
+
+        printf("\n");
+    }
+
+    
 
 
-    // TODO lo de arriba sería borrarlo, quedaría lo de abajo
-
-
-
-
-
-
+    //sem_post(&sync->B);
 
 
 
