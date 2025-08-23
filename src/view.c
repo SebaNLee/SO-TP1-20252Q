@@ -13,43 +13,44 @@ int main() {
     GameSync * sync = getGameSync();
 
 
-    //sem_wait(&sync->A);
-
-
-
-    // TODO BORRAR, esto es para testear acceso a memoria compartida
-    printf("Número de jugadores: %u\n", state->numPlayers);
-    printf("Juego terminado: %d\n", state->isGameOver);
-    printf("Dimensiones tablero: %u x %u\n", state->width, state->height);
-
-    // este me sirve de debug de player.c
-    printf("\n");
-    printf("\n");
-    printf("###  validMoves P1: %d    ###\n", state->players[0].validMoves);
-    printf("###  invalidMoves P1: %d  ###\n", state->players[0].invalidMoves);
-    printf("\n");
-
-    
-    printf("%p\n", (void *) state->board);
-    printf("\n");
-    
-    
-    for(int i = 0; i < state->height; i++)
+    while(!state->isGameOver)
     {
-        for(int j = 0; j < state->width; j++)
+        // esperar aviso de master.c
+        sem_wait(&sync->A);
+
+        // TODO BORRAR, esto es para testear acceso a memoria compartida
+        printf("Número de jugadores: %u\n", state->numPlayers);
+        printf("Juego terminado: %d\n", state->isGameOver);
+        printf("Dimensiones tablero: %u x %u\n", state->width, state->height);
+
+        // este me sirve de debug de player.c
+        printf("\n");
+        printf("\n");
+        printf("###  validMoves P1: %d    ###\n", state->players[0].validMoves);
+        printf("###  invalidMoves P1: %d  ###\n", state->players[0].invalidMoves);
+        printf("\n");
+
+        
+        printf("%p\n", (void *) state->board);
+        printf("\n");
+        
+        
+        for(int i = 0; i < state->height; i++)
         {
-            printf(" %d ", state->board[i * state->width + j]);
+            for(int j = 0; j < state->width; j++)
+            {
+                printf(" %d ", state->board[i * state->width + j]);
+            }
+
+            printf("\n");
         }
 
-        printf("\n");
+        sem_post(&sync->B);
     }
 
     
 
-
-    //sem_post(&sync->B);
-
-
+    sem_post(&sync->B); // TODO este tal vez está de más
 
 
     // desconectar de mem compartida
