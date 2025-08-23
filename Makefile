@@ -8,7 +8,7 @@ LIB_DIR =libs
 BIN_DIR = bin
 
 # fuentes comunes (sin main)
-COMMON = $(SRC_DIR)/$(LIB_DIR)/parameters.c
+COMMON = $(wildcard $(SRC_DIR)/$(LIB_DIR)/*.c)
 
 # ejecutables
 TARGETS = $(BIN_DIR)/master $(BIN_DIR)/player $(BIN_DIR)/view
