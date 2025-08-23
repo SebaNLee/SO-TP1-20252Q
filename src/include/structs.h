@@ -1,3 +1,5 @@
+#ifndef STRUCTS_H
+#define STRUCTS_H
 
 #include <sys/mman.h>
 #include <stdio.h>
@@ -39,3 +41,6 @@ typedef struct {
     unsigned int F;
     sem_t G[9];
 } GameSync;
+
+
+#endif
