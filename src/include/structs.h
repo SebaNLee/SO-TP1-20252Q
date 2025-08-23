@@ -29,7 +29,7 @@ typedef struct {
     unsigned int numPlayers;
     Player players[9];
     bool isGameOver; // TODO puede estar invetido
-    int * board;
+    int board[];
 } GameState;
 
 typedef struct {
