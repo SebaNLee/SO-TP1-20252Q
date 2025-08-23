@@ -1,7 +1,15 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include "structs.h"
+#include "shm.h"
 
 
+
+unsigned char computeNextMove(); // TODO debería pasar parámetros como board, player, x, y, etc
 
 #endif

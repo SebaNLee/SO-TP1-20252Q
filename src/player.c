@@ -1,27 +1,21 @@
-
-// TODO mover a .h
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "structs.h"
-#include "shm.h"
+#include "player.h"
 
 
 int main(){
-
-
-
-    // TODO prueba de movimiento 
-    // creo que en principio está jugando bien, pero no tengo forma de verificarlo
-    // debe ser por semáforos (tira errores del tipo sem_)
 
 
     // conectar a mem compartida
     GameState * state = getGameState();
     GameSync * sync = getGameSync();
 
+    // meto random 
+
     while(!state->isGameOver)
     {
+        // TODO
+        // esto anda para un jugador con id 0
+        // es una prueba genérica
+
 
         sem_wait(&sync->G[0]); // TODO hardcodeado con 0, cambiar
 
@@ -38,14 +32,14 @@ int main(){
         close(pipefd[0]);
 
 
-        // preparo para escribir siguiente jugada
-        // consigna: "El máster garantiza que el extremo de escritura de este pipe esté asociado al descriptor de archivo 1"
-        unsigned char nextMove = 4; // TODO meter random después
+        // calculo siguiente jugada
+        unsigned char nextMove = computeNextMove(); // TODO debería pasar parámetros como board, player, x, y, etc
 
+        // consigna: "El máster garantiza que el extremo de escritura de este pipe esté asociado al descriptor de archivo 1"
         // escribo en write end del pipe (pasar siguiente jugada)
         write(STDOUT_FILENO, &nextMove, 1);
 
-        sem_post(&sync->G[0]); // TODO hardcodeado con 0, cambiar
+        
     }
 
 
@@ -55,4 +49,14 @@ int main(){
 
     
     return 0;
+}
+
+
+
+
+unsigned char computeNextMove()
+{
+    srand(time(NULL));
+
+    return rand() % 8;
 }
