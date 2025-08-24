@@ -116,7 +116,6 @@ int main(int argc, char * argv[]) {
     // conectar a mem compartida
     GameState * state = getGameState();
     GameSync * sync = getGameSync();
-    Player * leaderboard = state->players;
     
 
     while(!state->isGameOver)
@@ -135,8 +134,12 @@ int main(int argc, char * argv[]) {
         printf("\n");
 
         printTableContent(state, width, height); // TODO, esto lo de pasar todo el state puede estar mal
+
+        // creo una copia para el leaderboard
+        Player playersCopy[state->numPlayers];
+        memcpy(playersCopy, state->players, state->numPlayers * sizeof(Player));
         
-        rankPlayers(leaderboard, state->numPlayers);
+        rankPlayers(playersCopy, state->numPlayers);
 
         for (int i = 1; i <= state->numPlayers; i++) {
             Player player = state->players[i-1];
