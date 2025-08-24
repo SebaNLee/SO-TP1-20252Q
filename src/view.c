@@ -21,12 +21,10 @@ void printHeader(int columns) {
         printf("═══╗\n");
 }
 
-void printTableContent(GameState * state) {
+void printTableContent(GameState * state, int width, int height) {
 
     const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BRIGHT_BLUE, BRIGHT_MAGENTA};
 
-    int height = state->height;
-    int width = state->width;
     int numPlayers = state->numPlayers;
     int * board = state->board;
     Player * players = state->players;
@@ -80,8 +78,11 @@ void printBase(int columns) {
 }
 
 
-int main() {
+int main(int argc, char * argv[]) {
 
+    // manejo de parámetros (asumo buen uso de master.c)
+    int width = atoi(argv[1]);
+    int height = atoi(argv[2]);
 
     // conectar a mem compartida
     GameState * state = getGameState();
@@ -96,14 +97,14 @@ int main() {
         // TODO BORRAR, esto es para testear acceso a memoria compartida
         printf("Número de jugadores: %u\n", state->numPlayers);
         printf("Juego terminado: %d\n", state->isGameOver);
-        printf("Dimensiones tablero: %u x %u\n", state->width, state->height);
+        printf("width:%u x height%u\n", width, height);
 
         // este me sirve de debug de player.c
         printf("###  validMoves P1: %d    ###\n", state->players[0].validMoves);
         printf("###  invalidMoves P1: %d  ###\n", state->players[0].invalidMoves);
         printf("\n");
 
-        printTableContent(state);
+        printTableContent(state, width, height); // TODO, esto lo de pasar todo el state puede estar mal
 
         sem_post(&sync->B);
     }
