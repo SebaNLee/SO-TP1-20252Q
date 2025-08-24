@@ -16,7 +16,6 @@
 
 
 const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BRIGHT_BLUE, BRIGHT_MAGENTA, GOLD_BG, SILVER_BG, BRONZE_BG};
-static GameState * state;    // TODO REVISAR SI ESTO ES VÁLIDO
 
 void printHeader(int columns) {
         int counter = 1;
@@ -85,11 +84,8 @@ void printBase(int columns) {
 
 int comparePlayersPositions(const void *a, const void *b) {
 
-    int i1 = *(const int*) a;
-    int i2 = *(const int*) b;
-
-    const Player *p1 = (const Player*) &state->players[i1];
-    const Player *p2 = (const Player*) &state->players[i2];
+    const Player *p1 = *(const Player**)a;
+    const Player *p2 = *(const Player**)b;
 
     if (p1->score != p2->score)
         return p2->score - p1->score;
@@ -101,12 +97,6 @@ int comparePlayersPositions(const void *a, const void *b) {
 
 }
 
-void rankPlayers(int * leaderboard, size_t n) {
-    qsort(leaderboard, n, sizeof(int), comparePlayersPositions);
-
-}
-
-
 
 
 
@@ -117,7 +107,7 @@ int main(int argc, char * argv[]) {
     int height = atoi(argv[2]);
 
     // conectar a mem compartida
-    state = getGameState();
+    GameState * state = getGameState();
     GameSync * sync = getGameSync();
     
 
@@ -138,25 +128,37 @@ int main(int argc, char * argv[]) {
 
         printTableContent(state, width, height); // TODO, esto lo de pasar todo el state puede estar mal
 
-        // creo una copia para el leaderboard
-        Player playersCopy[state->numPlayers];
-        memcpy(playersCopy, state->players, state->numPlayers * sizeof(Player));
         
-        int leaderboard[state->numPlayers];
+        Player * leaderboard[state->numPlayers];
         // Se llena el leaderboard con ids de jugadores
         for (int i=0; i < state->numPlayers; i++) {                 
-            leaderboard[i] = i;                                     
+            leaderboard[i] = &state->players[i];                                     
         }
-        rankPlayers(leaderboard, state->numPlayers);
+
+        qsort(leaderboard, state->numPlayers, sizeof(Player *), comparePlayersPositions);
 
 
-        //rankPlayers(playersCopy, state->numPlayers);
 
         // Print leaderboard
         for (int i = 1; i <= state->numPlayers; i++) {
-            int numPlayer = leaderboard[i-1];
-            Player player = state->players[numPlayer];
-            printf("%s%d°. %s%s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, colors[numPlayer], player.name, RESET, player.score, player.validMoves, player.invalidMoves);
+            // int numPlayer = leaderboard[i-1];
+            // Player player = state->players[numPlayer];
+
+            Player * currPlayer = leaderboard[i - 1];
+
+
+            // TODO esto es ineficiente, porque se podría guardar en leaderboard tipo un struct {Player, numPlayer}
+            int numPlayer;
+            for(int j = 0; j < state->numPlayers; j++)
+            {
+                if(currPlayer->pid == state->players[j].pid)
+                {
+                    numPlayer = j;
+                }
+            }
+
+
+            printf("%s%d°. %s%s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, colors[numPlayer], currPlayer->name, RESET, currPlayer->score, currPlayer->validMoves, currPlayer->invalidMoves);
         }
 
         sem_post(&sync->B);
