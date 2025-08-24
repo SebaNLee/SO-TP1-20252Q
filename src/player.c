@@ -1,7 +1,16 @@
 #include "player.h"
 
 
-int main(){
+int main(int argc, char * argv[]) {
+
+    // manejo de parámetros (asumo buen uso de master.c)
+    int width = atoi(argv[1]);
+    int height = atoi(argv[2]);
+
+    // TODO borrar dummy para que no me tire warning de unused variable
+    int temp = width + height;
+    temp++;
+    
 
 
     // conectar a mem compartida
@@ -18,7 +27,6 @@ int main(){
 
 
         sem_wait(&sync->G[0]); // TODO hardcodeado con 0, cambiar
-
         
         int pipefd[2];
 
