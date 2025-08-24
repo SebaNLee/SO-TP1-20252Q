@@ -3,6 +3,7 @@
 
 #include "structs.h"
 #include "shm.h"
+#include <string.h>
 
 
 void printHeader(int columns);
