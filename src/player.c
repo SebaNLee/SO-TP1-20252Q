@@ -1,4 +1,5 @@
 #include "player.h"
+#include "structs.h"
 
 
 int main(int argc, char * argv[]) {
@@ -11,22 +12,24 @@ int main(int argc, char * argv[]) {
     int temp = width + height;
     temp++;
     
-
-
     // conectar a mem compartida
     GameState * state = getGameState();
     GameSync * sync = getGameSync();
 
-    // meto random 
+    // obtengo número de jugador por PID guardado en struct Player
+    int playerID;
+    for(int i = 0; i < state->numPlayers; i++)
+    {
+        // si PID coincide con el i-ésimo jugador, entonces encontré playerID
+        if(state->players[i].pid == getpid())
+        {
+            playerID = i;
+        }
+    }
 
     while(!state->isGameOver)
     {
-        // TODO
-        // esto anda para un jugador con id 0
-        // es una prueba genérica
-
-
-        sem_wait(&sync->G[0]); // TODO hardcodeado con 0, cambiar
+        sem_wait(&sync->G[playerID]);
         
         int pipefd[2];
 
