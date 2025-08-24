@@ -7,7 +7,7 @@
 
 void printHeader(int columns);
 
-void printTableContent(GameState * state);
+void printTableContent(GameState * state, int width, int height);
 
 void printBase(int columns);
 
