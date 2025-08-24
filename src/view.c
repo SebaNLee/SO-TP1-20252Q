@@ -21,7 +21,7 @@ void printHeader(int columns) {
         printf("═══╗\n");
 }
 
-void printTableContent(GameState * state, int height, int width) {
+void printTableContent(GameState * state, int width, int height) {
 
     const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BRIGHT_BLUE, BRIGHT_MAGENTA};
 
