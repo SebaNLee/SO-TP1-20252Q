@@ -142,7 +142,7 @@ int main(int argc, char * argv[]) {
         rankPlayers(playersCopy, state->numPlayers);
 
         for (int i = 1; i <= state->numPlayers; i++) {
-            Player player = state->players[i-1];
+            Player player = playersCopy[i-1];
             printf("%s%d°. %s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, player.name, RESET, player.score, player.validMoves, player.invalidMoves);
         }
 
