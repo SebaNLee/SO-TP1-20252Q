@@ -10,15 +10,13 @@
 #define WHITE   "\033[47m"
 #define BRIGHT_BLUE     "\033[104m"
 #define BRIGHT_MAGENTA   "\033[105m"
-#define GOLD_BG   "\033[48;2;212;175;55m"   // dorado real
-#define SILVER_BG "\033[48;2;192;192;192m"  // plateado
-#define BRONZE_BG "\033[48;2;205;127;50m"   // bronce
-#define GOLD_BG   "\033[48;2;212;175;55m"   // dorado real
-#define SILVER_BG "\033[48;2;192;192;192m"  // plateado
-#define BRONZE_BG "\033[48;2;205;127;50m"   // bronce
+#define GOLD_BG   "\033[48;2;212;175;55m"   
+#define SILVER_BG "\033[48;2;192;192;192m"  
+#define BRONZE_BG "\033[48;2;205;127;50m"   
+
 
 const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BRIGHT_BLUE, BRIGHT_MAGENTA, GOLD_BG, SILVER_BG, BRONZE_BG};
-
+static GameState * state;    // TODO REVISAR SI ESTO ES VÁLIDO
 
 void printHeader(int columns) {
         int counter = 1;
@@ -86,8 +84,12 @@ void printBase(int columns) {
 }
 
 int comparePlayersPositions(const void *a, const void *b) {
-    const Player *p1 = (const Player*) a;
-    const Player *p2 = (const Player*) b;
+
+    int i1 = *(const int*) a;
+    int i2 = *(const int*) b;
+
+    const Player *p1 = (const Player*) &state->players[i1];
+    const Player *p2 = (const Player*) &state->players[i2];
 
     if (p1->score != p2->score)
         return p2->score - p1->score;
@@ -99,12 +101,13 @@ int comparePlayersPositions(const void *a, const void *b) {
 
 }
 
-void rankPlayers(Player * players, size_t n) {
-    qsort(players, n, sizeof(Player), comparePlayersPositions);
+void rankPlayers(int * leaderboard, size_t n) {
+    qsort(leaderboard, n, sizeof(int), comparePlayersPositions);
+
 }
 
 
-    
+
 
 
 int main(int argc, char * argv[]) {
@@ -114,7 +117,7 @@ int main(int argc, char * argv[]) {
     int height = atoi(argv[2]);
 
     // conectar a mem compartida
-    GameState * state = getGameState();
+    state = getGameState();
     GameSync * sync = getGameSync();
     
 
@@ -139,11 +142,21 @@ int main(int argc, char * argv[]) {
         Player playersCopy[state->numPlayers];
         memcpy(playersCopy, state->players, state->numPlayers * sizeof(Player));
         
-        rankPlayers(playersCopy, state->numPlayers);
+        int leaderboard[state->numPlayers];
+        // Se llena el leaderboard con ids de jugadores
+        for (int i=0; i < state->numPlayers; i++) {                 
+            leaderboard[i] = i;                                     
+        }
+        rankPlayers(leaderboard, state->numPlayers);
 
+
+        //rankPlayers(playersCopy, state->numPlayers);
+
+        // Print leaderboard
         for (int i = 1; i <= state->numPlayers; i++) {
-            Player player = playersCopy[i-1];
-            printf("%s%d°. %s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, player.name, RESET, player.score, player.validMoves, player.invalidMoves);
+            int numPlayer = leaderboard[i-1];
+            Player player = state->players[numPlayer];
+            printf("%s%d°. %s%s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, colors[numPlayer], player.name, RESET, player.score, player.validMoves, player.invalidMoves);
         }
 
         sem_post(&sync->B);
