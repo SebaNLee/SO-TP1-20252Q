@@ -11,6 +11,7 @@
 int main(int argc, char const *argv[]) {
 
 
+    // parseo de parámetros
     MasterParameters params = setParams(argc, ( char * const *) argv);
 
 
@@ -18,9 +19,23 @@ int main(int argc, char const *argv[]) {
 
     GameSync * sync = initGameSync();
 
+    // TODO dummy para warning
+    (void) sync; // borrar
+    (void) state; // borrar
+
+
+    // TODO tal vez sea mejor init shmem primero, para después parsear params directamente en state y sync
+
+    // paso parámetros a shmem
+    state->width = params.width;
+    state->height = params.height;
+    state->numPlayers = params.numPlayers;
+    state->width = params.width;
+
+
     
     // incializo pipes para cada jugador
-    //int pipesfd[numPlayers][2];
+    // int pipesfd[state->numPlayers][2];
 
 
     printParams(params);
