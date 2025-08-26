@@ -14,6 +14,8 @@ int main(int argc, char const *argv[]) {
     // parseo de parámetros
     MasterParameters params = setParams(argc, ( char * const *) argv);
 
+    // TODO debug
+    printParams(params);
 
     GameState * state = initGameState();
 
@@ -35,12 +37,33 @@ int main(int argc, char const *argv[]) {
 
     
     // incializo pipes para cada jugador
-    // int pipesfd[state->numPlayers][2];
+    int pipesfd[state->numPlayers][2];
+
+    // la idea es que quiero reemplazar los fd de STDOUT y STDIN de los players por lso fd del pide del master 
+    for(int i = 0; i < state->numPlayers; i++)
+    {
+        // creo pipes y obtengo fds
+        if(pipe(pipesfd[i]) == -1)
+        {
+            perror("Error inicializando pipes\n");
+            exit(1);
+        }
 
 
-    printParams(params);
+        // fork por cada jugador
+        // dup2 para reemplazar STDOUT de cada jugador
+    }
 
 
+    // ETC
+
+
+    // cierro pipes
+    for(int i = 0; i < state->numPlayers; i++)
+    {
+        close(pipesfd[i][PIPE_READ_END]);
+        close(pipesfd[i][PIPE_WRITE_END]);
+    }
 }
 
 GameState * initGameState()
