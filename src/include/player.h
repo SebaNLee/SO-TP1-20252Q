@@ -8,7 +8,8 @@
 #include "structs.h"
 #include "shm.h"
 
-
+#define PIPE_READ_END 0
+#define PIPE_WRITE_END 1
 
 unsigned char computeNextMove(); // TODO debería pasar parámetros como board, player, x, y, etc
 

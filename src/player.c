@@ -40,7 +40,7 @@ int main(int argc, char * argv[]) {
         }
 
         // cierro el de read end del pipe, no me interesa desde player.c
-        close(pipefd[0]);
+        close(pipefd[PIPE_READ_END]);
 
 
         // calculo siguiente jugada
