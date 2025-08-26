@@ -1,7 +1,6 @@
+
 #include "master.h"
 #include "structs.h"
-
-
 
 
 
@@ -34,6 +33,7 @@ int main(int argc, char const *argv[]) {
     state->numPlayers = params.numPlayers;
     state->width = params.width;
 
+    initSemaphones(sync);
 
     
     // incializo pipes para cada jugador
@@ -84,6 +84,47 @@ GameSync * initGameSync()
     return NULL;
 }
 
+int initSemaphones(GameSync * sync){
+
+    // Master <-> Vista
+    if (sem_init(&sync->view_reading_pending, 1, 0) == ERROR) {
+         perror("sem_init view_reading_pending\n");
+         return ERROR; 
+        }
+    if (sem_init(&sync->view_writing_done, 1, 0) == ERROR) {
+         perror("sem_init view_writing_done\n");
+         return ERROR; 
+        }
+
+    // Lectores <-> Escritor
+    if (sem_init(&sync->mutex_readers, 1, 1) == ERROR) {
+         perror("sem_init   mutex_readers\n"); 
+        return ERROR; 
+    } 
+    if (sem_init(&sync->mutex_writer, 1, 1) == ERROR) {
+         perror("sem_init mutex_writer\n");
+         return ERROR; 
+        }
+    if (sem_init(&sync->mutex_counter, 1, 1) == ERROR) {
+         perror("sem_init mutex_counter\n"); 
+         return ERROR;
+         }
+
+    // Contador de lectores
+    sync->numReaders = 0;
+
+    // Turnos de jugadores
+    for (int i = 0; i < 9; i++) {
+        if (sem_init(&sync->send_move[i], 1, 0) == ERROR) {
+            perror("sem_init send_move[i]\n");
+            return ERROR;
+        }
+    }
+
+    return SUCCESS;
+
+}
+
 
 
 // TODO debug
@@ -95,3 +136,4 @@ void printParams(MasterParameters params){
     }
     
 }
+
