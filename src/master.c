@@ -1,4 +1,7 @@
 #include "master.h"
+#include "structs.h"
+
+
 
 
 
@@ -10,6 +13,11 @@ int main(int argc, char const *argv[]) {
 
     MasterParameters params = setParams(argc, ( char * const *) argv);
 
+
+    GameState * state = initGameState();
+
+    GameSync * sync = initGameSync();
+
     
     // incializo pipes para cada jugador
     //int pipesfd[numPlayers][2];
@@ -19,6 +27,25 @@ int main(int argc, char const *argv[]) {
 
 
 }
+
+GameState * initGameState()
+{
+    // TODO aca iniciar y devolver shmem
+
+    
+    // TODO debug
+    return NULL;
+}
+
+GameSync * initGameSync()
+{
+    // TODO aca iniciar y devolver shmem
+
+
+    // TODO debug
+    return NULL;
+}
+
 
 
 // TODO debug
