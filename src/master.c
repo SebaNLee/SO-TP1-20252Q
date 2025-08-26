@@ -33,7 +33,7 @@ int main(int argc, char const *argv[]) {
     state->numPlayers = params.numPlayers;
     state->width = params.width;
 
-    initSemaphones(sync);
+   initSemaphores(sync);
 
     
     // incializo pipes para cada jugador
@@ -64,6 +64,8 @@ int main(int argc, char const *argv[]) {
         close(pipesfd[i][PIPE_READ_END]);
         close(pipesfd[i][PIPE_WRITE_END]);
     }
+
+    freeSemaphores(sync);
 }
 
 GameState * initGameState()
@@ -84,7 +86,7 @@ GameSync * initGameSync()
     return NULL;
 }
 
-int initSemaphones(GameSync * sync){
+int initSemaphores(GameSync * sync){
 
     // Master <-> Vista
     if (sem_init(&sync->view_reading_pending, 1, 0) == ERROR) {
@@ -123,6 +125,37 @@ int initSemaphones(GameSync * sync){
 
     return SUCCESS;
 
+}
+
+int freeSemaphores(GameSync * sync) {
+   if( sem_destroy(&sync->view_reading_pending)==ERROR){
+    perror("sem_destroy view_reading_pending\n");
+    return ERROR;
+   }
+    if( sem_destroy(&sync->view_writing_done)==ERROR){
+    perror("sem_destroy view_writing_done\n");
+    return ERROR;
+   }
+    if( sem_destroy(&sync->mutex_readers)==ERROR){
+    perror("sem_destroy mutex_readers\n");
+    return ERROR;
+   }
+    if( sem_destroy(&sync->mutex_writer)==ERROR){
+    perror("sem_destroy mutex_writer\n");
+    return ERROR;
+   }
+   if( sem_destroy(&sync->mutex_counter)==ERROR){
+    perror("sem_destroy mutex_counter\n");
+    return ERROR;
+   }
+   for (int i = 0; i < 9; i++) {
+        if (sem_destroy(&sync->send_move[i]) == ERROR) {
+            perror("sem_destroy send_move[i]\n");
+            return ERROR;
+        }
+    }
+
+    return SUCCESS;
 }
 
 

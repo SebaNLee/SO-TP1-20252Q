@@ -16,6 +16,7 @@ void printParams(MasterParameters params); // TODO debug
 
 GameState * initGameState();
 GameSync * initGameSync();
-int initSemaphones(GameSync * sync);
+int initSemaphores(GameSync * sync);
+int freeSemaphores(GameSync * sync);
 
 #endif
