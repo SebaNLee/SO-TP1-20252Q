@@ -114,7 +114,7 @@ int main(int argc, char * argv[]) {
     while(!state->isGameOver)
     {
         // esperar aviso de master.c
-        sem_wait(&sync->A);
+        sem_wait(&sync->view_reading_pending);
 
         // TODO BORRAR, esto es para testear acceso a memoria compartida
         printf("Número de jugadores: %u\n", state->numPlayers);
@@ -161,11 +161,11 @@ int main(int argc, char * argv[]) {
             printf("%s%d°. %s%s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, colors[numPlayer], currPlayer->name, RESET, currPlayer->score, currPlayer->validMoves, currPlayer->invalidMoves);
         }
 
-        sem_post(&sync->B);
+        sem_post(&sync->view_writing_done);
     }
     
 
-    sem_post(&sync->B); // TODO este tal vez está de más
+    sem_post(&sync->view_writing_done); // TODO este tal vez está de más
 
     
     // desconectar de mem compartida

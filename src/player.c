@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
 
     while(!state->isGameOver)
     {
-        sem_wait(&sync->G[playerID]);
+        sem_wait(&sync->send_move[playerID]);
         
         int pipefd[2];
 

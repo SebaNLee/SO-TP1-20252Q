@@ -37,12 +37,12 @@ typedef struct {
     El máster hace sem_post(&A) cuando cambió el estado (ej: después de procesar un movimiento)
     La vista hace sem_wait(&A) para enterarse que hay algo nuevo que imprimir
     */
-    sem_t master_alerts_view; 
+    sem_t view_reading_pending; 
      /*
      La vista hace sem_post(&B) cuando terminó de imprimir
     El máster hace sem_wait(&B) para esperar antes de continuar
      */
-    sem_t view_alerts_master; 
+    sem_t view_writing_done; 
 
     sem_t mutex_readers; //protege el acceso al contador F (para sumar/restar lectores) 
     sem_t mutex_writer; //se bloquea cuando alguien escribe (el máster)
@@ -54,11 +54,11 @@ typedef struct {
 /*
 A y B → Comunicación Master ↔ Vista
 
-A (master_alerts_view):
+A (view_reading_pending):
 El máster hace sem_post(&A) cuando cambió el estado (ej: después de procesar un movimiento).
 La vista hace sem_wait(&A) para enterarse que hay algo nuevo que imprimir.
 
-B (view_alerts_master):
+B (view_writing_done):
 La vista hace sem_post(&B) cuando terminó de imprimir.
 El máster hace sem_wait(&B) para esperar antes de continuar.
 Esto asegura que no se pisa la memoria mientras la vista imprime.
