@@ -32,8 +32,6 @@ int main(int argc, char const *argv[]) {
     state->numPlayers = params.numPlayers;
     state->width = params.width;
 
-   initSemaphores(sync);
-
     
     // incializo pipes para cada jugador
     int pipesfd[state->numPlayers][2];
@@ -65,11 +63,17 @@ int main(int argc, char const *argv[]) {
     }
 
     freeSemaphores(sync);
+    // freeGameState(state); // TODO
+
+
+
+    // TODO borrar debug
+    printf("OK!\n");
+
 }
 
 GameState * initGameState(MasterParameters parameters)
 {
-    // TODO aca iniciar y devolver shmem
     const char * memory = "/game_state";
     const size_t boardSize = parameters.width * parameters.height * sizeof(int);
     const size_t size = sizeof(GameState) + boardSize;
@@ -126,43 +130,57 @@ GameState * initGameState(MasterParameters parameters)
         printf("\n");
     }
 
-    // TODO debug
     return state;
 }
 
 GameSync * initGameSync()
 {
-    // TODO aca iniciar y devolver shmem
+    const char * memory = "/game_sync";
+    const size_t size = sizeof(GameSync);
 
+    // Creación de memoria compartida
+    int fd = shm_open(memory, O_CREAT | O_RDWR, 0666);
+    if (fd == -1) {
+        perror("Failed to create shared memory for GameSync");
+        exit(1);
+    }
 
-    // TODO debug
-    return NULL;
-}
+    ftruncate(fd, size);
 
-int initSemaphores(GameSync * sync){
+    // Mapeo
+    void * ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (ptr == MAP_FAILED) {
+        perror("Failed to map memory");
+        exit(1);
+    }
+
+    // Ya no lo necesitamos
+    close(fd);
+
+    GameSync * sync = (GameSync *) ptr;
 
     // Master <-> Vista
     if (sem_init(&sync->view_reading_pending, 1, 0) == ERROR) {
          perror("sem_init view_reading_pending\n");
-         return ERROR; 
+         exit(1); 
         }
     if (sem_init(&sync->view_writing_done, 1, 0) == ERROR) {
          perror("sem_init view_writing_done\n");
-         return ERROR; 
+         exit(1); 
         }
 
     // Lectores <-> Escritor
     if (sem_init(&sync->mutex_readers, 1, 1) == ERROR) {
          perror("sem_init   mutex_readers\n"); 
-        return ERROR; 
+        exit(1); 
     } 
     if (sem_init(&sync->mutex_writer, 1, 1) == ERROR) {
          perror("sem_init mutex_writer\n");
-         return ERROR; 
+         exit(1); 
         }
     if (sem_init(&sync->mutex_counter, 1, 1) == ERROR) {
          perror("sem_init mutex_counter\n"); 
-         return ERROR;
+         exit(1);
          }
 
     // Contador de lectores
@@ -172,11 +190,11 @@ int initSemaphores(GameSync * sync){
     for (int i = 0; i < 9; i++) {
         if (sem_init(&sync->send_move[i], 1, 0) == ERROR) {
             perror("sem_init send_move[i]\n");
-            return ERROR;
+            exit(1);
         }
     }
 
-    return SUCCESS;
+    return sync;
 
 }
 
