@@ -9,14 +9,13 @@
 
 int main(int argc, char const *argv[]) {
 
-
     // parseo de parámetros
     MasterParameters params = setParams(argc, ( char * const *) argv);
 
     // TODO debug
     printParams(params);
 
-    GameState * state = initGameState();
+    GameState * state = initGameState(params);
 
     GameSync * sync = initGameSync();
 
@@ -68,13 +67,67 @@ int main(int argc, char const *argv[]) {
     freeSemaphores(sync);
 }
 
-GameState * initGameState()
+GameState * initGameState(MasterParameters parameters)
 {
     // TODO aca iniciar y devolver shmem
+    const char * memory = "shm";
+    const size_t boardSize = parameters.width * parameters.height * sizeof(int);
+    const size_t size = sizeof(GameState) + boardSize;
 
+    // Creación de memoria
+    int fd = shm_open(memory, O_CREAT | O_RDWR, 0666);
+    if (fd == -1) {
+        perror("Failed to create shared memory");
+        exit(1);
+    }
     
+    // Ajuste de tamaño
+    ftruncate(fd, size);
+
+    // Mapeo
+    void * ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (ptr == MAP_FAILED) {
+        perror("Failed to map memory");
+        exit(1);
+    }
+
+    // Ya no lo necesitamos
+    close(fd);
+
+
+    // Llenar información del gameState
+    GameState * state = (GameState*) ptr;
+    state->width = parameters.width;
+    state->height = parameters.height;
+    state->numPlayers = parameters.numPlayers;
+    state->isGameOver = false;
+
+    memset(state->players, 0, sizeof(state->players));
+    memset(state->board, 0, boardSize);
+
+
+
+    printf("Se creó la memoria compartida!\n");
+    printf("Creando tablero...\n");
+
+    // Generación de tablero
+    srand(time(NULL));
+
+    for (int i = 0; i < state->width * state->height; i++) {
+        state->board[i] = (rand() % 9) + 1; 
+    }
+
+    printf("Tablero creado!\n");
+
+    for (int i=0; i < state->height; i++) {
+        for (int j=0; j < state->width; j++) {
+            printf("%d ", state->board[i*state->width+j]);
+        }
+        printf("\n");
+    }
+
     // TODO debug
-    return NULL;
+    return state;
 }
 
 GameSync * initGameSync()
