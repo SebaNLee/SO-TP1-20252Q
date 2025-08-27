@@ -70,7 +70,7 @@ int main(int argc, char const *argv[]) {
 GameState * initGameState(MasterParameters parameters)
 {
     // TODO aca iniciar y devolver shmem
-    const char * memory = "shm";
+    const char * memory = "/game_state";
     const size_t boardSize = parameters.width * parameters.height * sizeof(int);
     const size_t size = sizeof(GameState) + boardSize;
 
