@@ -27,6 +27,9 @@ int main(int argc, char const *argv[]) {
     // fork por cada jugador
     // dup2 para reemplazar STDOUT de cada jugador
 
+    // inicializo jugadores y vista
+    initPlayers(params, state, pipesfd);
+    initView(params);
 
 
 
@@ -34,6 +37,9 @@ int main(int argc, char const *argv[]) {
     // ETC
 
 
+
+
+    // libero pipes
     freePipes(pipesfd, state->numPlayers);
 
     freeSemaphores(sync);
@@ -43,6 +49,17 @@ int main(int argc, char const *argv[]) {
 
     // TODO borrar debug
     printf("OK!\n");
+
+}
+
+void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
+{
+
+}
+
+
+void initView(MasterParameters params)
+{
 
 }
 

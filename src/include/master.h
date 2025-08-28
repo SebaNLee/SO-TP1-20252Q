@@ -22,5 +22,7 @@ int initSemaphores(GameSync * sync);
 int freeSemaphores(GameSync * sync);
 void initPipes(int pipesfd[][2], int numPlayers);
 void freePipes(int pipesfd[][2], int numPlayers);
+void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2]);
+void initView(MasterParameters params);
 
 #endif
