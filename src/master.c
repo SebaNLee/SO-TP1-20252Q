@@ -43,6 +43,31 @@ int main(int argc, char const *argv[]) {
         // TODO chequeo de movimiento válido
         // TODO chequeo de tiempo (si levanto isGameOver o no)
         // TODO delay
+
+
+
+        // TODO debug
+        
+        unsigned char move;
+        for (int i = 0; i < state->numPlayers; i++) {
+
+            // hardcodeo, levanto semáforos
+            sem_post(&sync->send_move[i]);
+
+            // creo que por acá iría el select()
+
+            int n =read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+            if(n > 0)
+                printf("Jugador %d hizo jugada: %d\n", i, move);
+
+            // por ahora funciona para el jugador 0, pero el pipe está andando
+            // creo que falla por lo de select()
+
+        }
+        //
+
+
+
     }
 
 
@@ -66,7 +91,52 @@ int main(int argc, char const *argv[]) {
 
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
 {
+    
 
+    for(int i = 0; i < state->numPlayers; i++)
+    {
+        int pid = fork();
+
+        if(pid < 0)
+        {
+            perror("fork() error\n");
+            exit(1);
+        }
+        else if(pid == 0) // hijo
+        {
+            // consigna: "El máster garantiza que el extremo de escritura de este pipe esté asociado al descriptor de archivo 1"
+
+            // cierro read end del pide del player
+            close(pipesfd[i][PIPE_READ_END]);
+
+            // copia write end del pipe al STDOUT del player 
+            if(dup2(pipesfd[i][PIPE_WRITE_END], STDOUT_FILENO) == -1)
+            {
+                perror("dup2() error\n");
+                exit(1);
+            }
+
+            // cierro el write end del pipe original (ya está en STDOUT)
+            close(pipesfd[i][PIPE_WRITE_END]);
+
+            // preparo argumentos para player
+            char widthStr[16];
+            char heightStr[16];
+            snprintf(widthStr, sizeof(widthStr), "%d", params.width);
+            snprintf(heightStr, sizeof(heightStr), "%d", params.height);
+            char * playerArgv[] = {params.players[i], widthStr, heightStr, NULL};
+
+            // ejecuto proceso player
+            execv(params.players[i], playerArgv); // TODO tal vez esto es execve? no entiendo la parte de envp ??
+        }
+        else // padre
+        {
+            // me guardo el PID del hijo (jugador i-ésimo)
+            state->players[i].pid = pid;
+        }
+    }
+
+    return;
 }
 
 
