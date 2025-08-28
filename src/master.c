@@ -33,6 +33,18 @@ int main(int argc, char const *argv[]) {
 
 
 
+    // ETC
+
+
+    while(!state->isGameOver)
+    {
+        // TODO select() para esperar lecturas de pipes
+        // TODO semáforos
+        // TODO chequeo de movimiento válido
+        // TODO chequeo de tiempo (si levanto isGameOver o no)
+        // TODO delay
+    }
+
 
     // ETC
 
