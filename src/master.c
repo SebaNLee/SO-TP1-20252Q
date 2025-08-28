@@ -21,23 +21,11 @@ int main(int argc, char const *argv[]) {
     
     // incializo pipes para cada jugador
     int pipesfd[state->numPlayers][2];
+    initPipes(pipesfd, state->numPlayers);
 
     // la idea es que quiero reemplazar los fd de STDOUT y STDIN de los players por lso fd del pide del master 
-    for(int i = 0; i < state->numPlayers; i++)
-    {
-        // creo pipes y obtengo fds
-        if(pipe(pipesfd[i]) == -1)
-        {
-            perror("Error inicializando pipes\n");
-            exit(1);
-        }
-
-
-        // fork por cada jugador
-        // dup2 para reemplazar STDOUT de cada jugador
-    }
-
-
+    // fork por cada jugador
+    // dup2 para reemplazar STDOUT de cada jugador
 
 
 
@@ -46,12 +34,7 @@ int main(int argc, char const *argv[]) {
     // ETC
 
 
-    // cierro pipes
-    for(int i = 0; i < state->numPlayers; i++)
-    {
-        close(pipesfd[i][PIPE_READ_END]);
-        close(pipesfd[i][PIPE_WRITE_END]);
-    }
+    freePipes(pipesfd, state->numPlayers);
 
     freeSemaphores(sync);
     // freeGameState(state); // TODO
@@ -188,6 +171,33 @@ GameSync * initGameSync()
     return sync;
 
 }
+
+void initPipes(int pipesfd[][2], int numPlayers)
+{
+    for(int i = 0; i < numPlayers; i++)
+    {
+        // creo pipes y obtengo fds
+        if(pipe(pipesfd[i]) == -1)
+        {
+            perror("Error inicializando pipes\n");
+            exit(1);
+        }
+    }
+
+    return;
+}
+
+void freePipes(int pipesfd[][2], int numPlayers)
+{
+    for(int i = 0; i < numPlayers; i++)
+    {
+        close(pipesfd[i][PIPE_READ_END]);
+        close(pipesfd[i][PIPE_WRITE_END]);
+    }
+
+    return;
+}
+    
 
 int freeSemaphores(GameSync * sync) {
    if( sem_destroy(&sync->view_reading_pending)==ERROR){
