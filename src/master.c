@@ -18,20 +18,6 @@ int main(int argc, char const *argv[]) {
     GameState * state = initGameState(params);
 
     GameSync * sync = initGameSync();
-
-    // TODO dummy para warning
-    (void) sync; // borrar
-    (void) state; // borrar
-
-
-    // TODO tal vez sea mejor init shmem primero, para después parsear params directamente en state y sync
-
-    // paso parámetros a shmem
-    state->width = params.width;
-    state->height = params.height;
-    state->numPlayers = params.numPlayers;
-    state->width = params.width;
-
     
     // incializo pipes para cada jugador
     int pipesfd[state->numPlayers][2];
@@ -50,6 +36,11 @@ int main(int argc, char const *argv[]) {
         // fork por cada jugador
         // dup2 para reemplazar STDOUT de cada jugador
     }
+
+
+
+
+
 
 
     // ETC
