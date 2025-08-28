@@ -63,6 +63,10 @@ int main(int argc, char const *argv[]) {
             // por ahora funciona para el jugador 0, pero el pipe está andando
             // creo que falla por lo de select()
 
+            // hardcodeo, view imprime una vez
+            // TODO creo que no anda por lo de MUTEX
+            sem_post(&sync->view_reading_pending);
+
         }
         //
 
@@ -91,8 +95,6 @@ int main(int argc, char const *argv[]) {
 
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
 {
-    
-
     for(int i = 0; i < state->numPlayers; i++)
     {
         int pid = fork();
@@ -142,7 +144,27 @@ void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
 
 void initView(MasterParameters params)
 {
+    // análogo a initPlayers, sin lo de pipes
 
+    int pid = fork();
+
+    if(pid < 0)
+    {
+        perror("fork() error\n");
+        exit(1);
+    }
+    else if(pid == 0) // hijo
+    {
+        char widthStr[16];
+        char heightStr[16];
+        snprintf(widthStr, sizeof(widthStr), "%d", params.width);
+        snprintf(heightStr, sizeof(heightStr), "%d", params.height);
+        char * viewArgv[] = {params.view, widthStr, heightStr, NULL};
+
+        execv(params.view, viewArgv); // TODO tal vez esto es execve? no entiendo la parte de envp ??
+    }
+    
+    return;
 }
 
 GameState * initGameState(MasterParameters parameters)
