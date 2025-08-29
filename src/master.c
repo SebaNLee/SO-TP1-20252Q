@@ -93,8 +93,11 @@ int main(int argc, char const *argv[]) {
     freePipes(pipesfd, state->numPlayers);
 
     freeSemaphores(sync);
-    // freeGameState(state); // TODO
-
+    
+    closeSHM(state, stateSize);
+    closeSHM(sync, syncSize);
+    unlinkSHM(GAME_STATE_SHM);
+    unlinkSHM(GAME_SYNC_SHM);
 
 
     // TODO borrar debug

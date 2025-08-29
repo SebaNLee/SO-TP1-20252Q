@@ -8,13 +8,15 @@ int main(int argc, char * argv[]) {
     int width = atoi(argv[1]);
     int height = atoi(argv[2]);
 
-    // TODO borrar dummy para que no me tire warning de unused variable
-    int temp = width + height;
-    temp++;
-    
     // conectar a mem compartida
-    GameState * state = getGameState();
-    GameSync * sync = getGameSync();
+    const char *GAME_STATE_SHM = "/game_state";
+    const char *GAME_SYNC_SHM = "/game_sync";
+    size_t boardSize = width * height * sizeof(int);
+    size_t stateSize = sizeof(GameState) + boardSize;
+    size_t syncSize = sizeof(GameSync);
+
+    GameState * state = createSHM(GAME_STATE_SHM, stateSize);
+    GameSync * sync = createSHM(GAME_SYNC_SHM, syncSize);
 
     // obtengo número de jugador por PID guardado en struct Player
     int playerID;
@@ -55,8 +57,8 @@ int main(int argc, char * argv[]) {
 
 
     // desconectar de mem compartida
-    munmap(state, sizeof(GameState));
-    munmap(sync, sizeof(GameSync));
+    closeSHM(state, stateSize);
+    closeSHM(sync, syncSize);
 
     
     return 0;

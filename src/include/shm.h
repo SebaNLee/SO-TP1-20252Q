@@ -16,10 +16,6 @@
 
 
 
-GameState * getGameState();
-GameSync * getGameSync();
-void closeGameState();
-void closeGameSync();
 void * createSHM(const char *name, size_t size);
 void closeSHM(void * ptr, int size);
 void unlinkSHM(const char * name);
