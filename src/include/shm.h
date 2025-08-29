@@ -16,7 +16,7 @@
 
 
 
-void * createSHM(const char *name, size_t size);
+void * createSHM(const char *name, size_t size, bool create, bool write);
 void closeSHM(void * ptr, int size);
 void unlinkSHM(const char * name);
 

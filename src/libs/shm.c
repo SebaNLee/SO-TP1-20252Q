@@ -2,25 +2,31 @@
 
 
 
-// TODO tal vez se tenga que hacer con permisos de read only o con write tmb
-// tipo sería pasarle los flags O_RDWR, O_RDONLY, etc
-void * createSHM(const char *name, size_t size) {
+
+void * createSHM(const char *name, size_t size, bool create, bool write) {
+
+
+    int oflag = write ? O_RDWR : O_RDONLY;
+    if (create) {
+        oflag |= O_CREAT;       // Indicar que además lo cree
+    }
 
     // Creación de memoria
-    int fd = shm_open(name, O_CREAT | O_RDWR, 0666);
+    int fd = shm_open(name, oflag, 0666);
     if (fd == -1) {
         perror("Failed to create shared memory");
         exit(1);
     }
 
     // Ajuste de tamaño
-    if (ftruncate(fd, size) == -1) {
+    if (create && ftruncate(fd, size) == -1) {
         perror("Failed to truncate shared memory");
         exit(1);
     }
 
+    int prot = PROT_READ | (write ? PROT_WRITE : 0);
     // Mapeo
-    void * ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void * ptr = mmap(0, size, prot, MAP_SHARED, fd, 0);
     if (ptr == MAP_FAILED) {
         perror("Failed to map memory");
         exit(1);

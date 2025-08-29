@@ -15,8 +15,8 @@ int main(int argc, char * argv[]) {
     size_t stateSize = sizeof(GameState) + boardSize;
     size_t syncSize = sizeof(GameSync);
 
-    GameState * state = createSHM(GAME_STATE_SHM, stateSize);
-    GameSync * sync = createSHM(GAME_SYNC_SHM, syncSize);
+    GameState * state = createSHM(GAME_STATE_SHM, stateSize, false, false);
+    GameSync * sync = createSHM(GAME_SYNC_SHM, syncSize, false, true);
 
     // obtengo número de jugador por PID guardado en struct Player
     int playerID;

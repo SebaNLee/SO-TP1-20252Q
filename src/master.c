@@ -22,8 +22,8 @@ int main(int argc, char const *argv[]) {
     size_t stateSize = sizeof(GameState) + boardSize;
     size_t syncSize = sizeof(GameSync);
 
-    GameState * state = (GameState*) createSHM(GAME_STATE_SHM, stateSize);
-    GameSync * sync = (GameSync *) createSHM(GAME_SYNC_SHM, syncSize);
+    GameState * state = (GameState*) createSHM(GAME_STATE_SHM, stateSize, true, true);
+    GameSync * sync = (GameSync *) createSHM(GAME_SYNC_SHM, syncSize, true, true);
 
     initGameState(state, params);
     initGameSync(sync);
