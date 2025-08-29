@@ -16,8 +16,8 @@
 
 void printParams(MasterParameters params); // TODO debug
 
-GameState * initGameState(MasterParameters params);
-GameSync * initGameSync();
+void initGameState(GameState * state, MasterParameters parameters);
+void initGameSync(GameSync * sync);
 int initSemaphores(GameSync * sync);
 int freeSemaphores(GameSync * sync);
 void initPipes(int pipesfd[][2], int numPlayers);

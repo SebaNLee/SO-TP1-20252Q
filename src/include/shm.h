@@ -20,6 +20,7 @@ GameState * getGameState();
 GameSync * getGameSync();
 void closeGameState();
 void closeGameSync();
+void * createSHM(const char *name, size_t size);
 
 
 

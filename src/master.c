@@ -9,15 +9,24 @@
 
 int main(int argc, char const *argv[]) {
 
+    const char *GAME_STATE_SHM = "/game_state";
+    const char *GAME_SYNC_SHM = "/game_sync";
+
     // parseo de parámetros
     MasterParameters params = setParams(argc, ( char * const *) argv);
 
     // TODO debug
     printParams(params);
 
-    GameState * state = initGameState(params);
+    size_t boardSize = params.width * params.height * sizeof(int);
+    size_t stateSize = sizeof(GameState) + boardSize;
+    size_t syncSize = sizeof(GameSync);
 
-    GameSync * sync = initGameSync();
+    GameState * state = (GameState*) createSHM(GAME_STATE_SHM, stateSize);
+    GameSync * sync = (GameSync *) createSHM(GAME_SYNC_SHM, syncSize);
+
+    initGameState(state, params);
+    initGameSync(sync);
     
     // incializo pipes para cada jugador
     int pipesfd[state->numPlayers][2];
@@ -167,42 +176,19 @@ void initView(MasterParameters params)
     return;
 }
 
-GameState * initGameState(MasterParameters parameters)
+void initGameState(GameState * state, MasterParameters params)
 {
-    const char * memory = "/game_state";
-    const size_t boardSize = parameters.width * parameters.height * sizeof(int);
-    const size_t size = sizeof(GameState) + boardSize;
-
-    // Creación de memoria
-    int fd = shm_open(memory, O_CREAT | O_RDWR, 0666);
-    if (fd == -1) {
-        perror("Failed to create shared memory");
-        exit(1);
-    }
-    
-    // Ajuste de tamaño
-    ftruncate(fd, size);
-
-    // Mapeo
-    void * ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (ptr == MAP_FAILED) {
-        perror("Failed to map memory");
-        exit(1);
-    }
-
-    // Ya no lo necesitamos
-    close(fd);
 
 
     // Llenar información del gameState
-    GameState * state = (GameState*) ptr;
-    state->width = parameters.width;
-    state->height = parameters.height;
-    state->numPlayers = parameters.numPlayers;
+    
+    state->width = params.width;
+    state->height = params.height;
+    state->numPlayers = params.numPlayers;
     state->isGameOver = false;
 
     memset(state->players, 0, sizeof(state->players));
-    memset(state->board, 0, boardSize);
+    memset(state->board, 0, params.width * params.height * sizeof(int));
 
 
 
@@ -225,34 +211,11 @@ GameState * initGameState(MasterParameters parameters)
         printf("\n");
     }
 
-    return state;
+    
 }
 
-GameSync * initGameSync()
+void initGameSync(GameSync * sync)
 {
-    const char * memory = "/game_sync";
-    const size_t size = sizeof(GameSync);
-
-    // Creación de memoria compartida
-    int fd = shm_open(memory, O_CREAT | O_RDWR, 0666);
-    if (fd == -1) {
-        perror("Failed to create shared memory for GameSync");
-        exit(1);
-    }
-
-    ftruncate(fd, size);
-
-    // Mapeo
-    void * ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (ptr == MAP_FAILED) {
-        perror("Failed to map memory");
-        exit(1);
-    }
-
-    // Ya no lo necesitamos
-    close(fd);
-
-    GameSync * sync = (GameSync *) ptr;
 
     // Master <-> Vista
     if (sem_init(&sync->view_reading_pending, 1, 0) == ERROR) {
@@ -288,8 +251,6 @@ GameSync * initGameSync()
             exit(1);
         }
     }
-
-    return sync;
 
 }
 
@@ -355,7 +316,7 @@ int freeSemaphores(GameSync * sync) {
 
 // TODO debug
 //solo de testeo
-void printParams(MasterParameters params){
+void printParams(MasterParameters params) {
     printf("width=%d\theight=%d\tdelay=%d\ttimeout=%d\tseed=%ld\tview=%s\tnumPlayers=%d\n", params.width, params.height, params.delay, params.timeout, params.seed, params.view, params.numPlayers);
     for(int i=0; i<params.numPlayers; i++){
         printf("player %d 's name=%s\n", i+1, params.players[i]);
