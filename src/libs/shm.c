@@ -92,6 +92,28 @@ void * createSHM(const char *name, size_t size) {
 }
 
 
+void closeSHM(void * ptr, int size)
+{
+    if(munmap(ptr, size) == -1)
+    {
+        perror("munmap() error\n");
+        exit(1);
+    }
+}
+
+
+void unlinkSHM(const char * name)
+{
+    if(shm_unlink(name) == -1)
+    {
+        perror("shm_unlink() error\n");
+        exit(1);
+    }
+
+    return;
+}
+
+
     
     
     
