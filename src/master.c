@@ -1,6 +1,7 @@
 
 #include "master.h"
 #include "structs.h"
+#include <math.h>
 
 
 
@@ -39,6 +40,8 @@ int main(int argc, char const *argv[]) {
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
     initView(params);
+    setPlayerPosition(state, state->width, state->height, state->numPlayers);
+    
 
 
 
@@ -284,6 +287,7 @@ void freePipes(int pipesfd[][2], int numPlayers)
 }
     
 
+
 int freeSemaphores(GameSync * sync) {
    if( sem_destroy(&sync->view_reading_pending)==ERROR){
     perror("sem_destroy view_reading_pending\n");
@@ -313,6 +317,33 @@ int freeSemaphores(GameSync * sync) {
     }
 
     return SUCCESS;
+}
+
+//separa el tablero por regiones y le asigna el centro de cada region a un jugador
+void setPlayerPosition(GameState * state, int width, int height, int numPlayers){
+  
+    int rows, cols;
+
+
+    rows = cols = (int)ceil(sqrt(numPlayers));
+
+    int idx = 0;
+    for (int r = 0; r < rows && idx < numPlayers; r++) {
+        for (int c = 0; c < cols && idx < numPlayers; c++) {
+            
+            int x = (c * width / cols) + (width / (2 * cols));
+            int y = (r * height / rows) + (height / (2 * rows));
+
+            state->players[idx].x = x;
+            state->players[idx].y = y;
+
+            // marcar celda como tomada por este jugador
+            state->board[y * width + x] = -(idx+1); 
+
+            idx++;
+        }
+    }
+
 }
 
 

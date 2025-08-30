@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+
 #include "parameters.h"
 #include "shm.h"
 #include "structs.h"
@@ -24,5 +25,8 @@ void initPipes(int pipesfd[][2], int numPlayers);
 void freePipes(int pipesfd[][2], int numPlayers);
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2]);
 void initView(MasterParameters params);
+void setPlayerPosition(GameState * state, int width, int height, int numPlayers);
+
+
 
 #endif

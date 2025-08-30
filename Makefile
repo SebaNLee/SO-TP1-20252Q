@@ -1,6 +1,7 @@
 # compilador y flags
 CC = gcc
-CFLAGS = -Wall -pedantic -Isrc/include
+CFLAGS = -Wall -pedantic -Isrc/include 
+LDFLAGS = -lm
 
 # directorios
 SRC_DIR = src
@@ -19,13 +20,13 @@ $(BIN_DIR):
 
 # reglas para cada ejecutable
 $(BIN_DIR)/master: $(SRC_DIR)/master.c $(COMMON) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(BIN_DIR)/player: $(SRC_DIR)/player.c $(COMMON) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(BIN_DIR)/view: $(SRC_DIR)/view.c $(COMMON) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # reglas principales
 .PHONY: all clean
