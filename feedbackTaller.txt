@@ -1,0 +1,75 @@
+
+
+Notas Nicole:
+
+dos problemas de sincronización:
+master y jugadores: jugadores constantemente leen estado --> pero master tiene que interrumpir para escribir
+    (mas importante que la lectura de los jugadores)
+    (no inanición del master--> no hay progresión del juego)
+
+array de semáforos --> sirve para que no se te llene el pipe (por si se usan versiones de jugador muy básico que se hacen muy rapido) 
+el master le avisa al jugador que el anterior movimiento ya fue procesado --> el jugador recomputaba su estrategia sobre un juego que no estaba actualizado. 
+El jugador mientras esta esperando sin usar recursos a que el master les notifique
+
+¿Por que uso los otros semáforos si tengo el arreglo?
+mandarlo por el foro, pero es necesario para que sea compatible con ChompChamps
+
+
+C,D,E
+MASTER ES EL UNICO QUE ESCRIBE
+
+
+dos cosas que hace el master
+ -- le pide al sistema operativo recursos (pipes, memoria compartida(+ semaforos) y fork (un proceso ocupa espacio en memoria)  )--> todo lo que pide lo tiene que DEVOLVER pq sino dependes de que el master TERMINE para que el SO limpie todo. 
+(si consumimos recursos y no liberamos hay quilombo potente) -> si un jugador esta bloqueado tiene que dejar de consumir CPU (estado zombie, jugador esta sin hacer nada pero el juego sigue), el master lo tiene que recolectar (waitpid) cuando se bloquea el jugador o recolectarlos todos al final del juego
+verificar que no quedan recursos abiertos --> sleep LARGO justo antes de que retorne master y tiras un strace
+
+-- Manejo de logica de mater -->El truco esta en el select()
+select()--> es un pulpo, resuelve el problema de tener que escuchar a muchos fd al mismo tiempo--> Básicamente sirve para que no se te bloquee el master si hay jugadores muy lentos, el select() te hace una cura de fd y te dice cuales ya tienen algo para leer y asi no se bloquea master. 
+SELECT NO LEE, LLENA UNA BOLSA DICIENDO CUALES FD TIENEN ALGO PARA LEER  (bolsita -> fdset)
+**el pipe es el recurso mediante el cual el jugador le habla al master
+**el array es el master notificando al jugador
+
+todos los jugadores pueden consultar el tablero al mismo tiempo
+
+jugador 1 manda movimiento por pipe
+jugador 2 queda ahí
+select dice que 1 tiene info
+master lee y la escribe
+mater notifica a 1 que hizo la jugada por array
+jugador 1 pensó su jugada 
+jugador 2 pensó su jugada pero en base al tablero del principio (puede hacer jugadas invalidas) 
+master corre select() va a elegir el jugador 1 
+
+(NO ES UN JUEGO POR TURNOS) --> se puede hacewr un jugador LENTO con un sleep
+
+
+lo de delay es básicamente que el select tiene un parámetro que después de cierta cantidad de tiempo devuelve 0 y ahí matamos
+
+mover todo lo de sync en master a un archivo lib
+
+linea 45 de player debería estar en master pq player no sabe que existen las pipes, el directamente escribe por STOUT, cerras los pipes desde master.
+
+
+
+
+
+
+
+Notas Juani:
+
+3 problemas de sinc
+
+Los jugadores leen constantemente. pero el master tiene que interumpir para garantizar la continuidad del juego.
+Array de semaforos, 1 escritor muchos lectores, otro para la notificaci[on de que no se llene el pipe.
+Yo no consumo hasta que no proceses mi anterior movimiento.
+S[olo el mster escribe en el GameState
+
+entryPoint del programa, pide recursos, crea todo lo que necesita, shmem, pipes. Si consumimos recursos y no liberamos la memoria, es un problema. Hay que limpiar todo lo que se le pide al SO shmem, pipes y el fork. 
+Cada uno de estos tiene una forma distinta de ver si est[a tomando recursos. Una responsabilidad del master es que una vexz que se queda bloqueado un jugador, lo liberamos. 
+Con waitpid, pero coma sabemos que no quedan recursos abiertos en el master_. Poner un sleep largo y usar strace para verificar que queda en estado de sleep efectivamente. 
+El truco esta en el select, es como un pulpo, resuelve el problema de que podemos tener muchos fd que escuchar al mismo tiempo. La idea es que no te bloquees en jugadores que no hayan ejecutado un movimiento cuando hay otros que ya tienen. 
+El select agarra de los fd que les pasas, y te devuelve los fd que tienen algo para leer, y cuando hagas el read no te vas a bloquear. 
+El arreglo de semaforos es para notificar a jugadores que su jugada fue procesada, va en sentido contrario al pipe. 
+Puede hacer un mov invalido porque alguien mas se paro donde iba a ir originalmente.
+Dpeendiendo lo que tire el select, doy jugadores a esos.  Hacer un slow?player que haga espera activa. Si devuelve 0 el select es porque no hay ningun fd

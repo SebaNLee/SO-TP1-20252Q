@@ -42,7 +42,7 @@ int main(int argc, char * argv[]) {
         }
 
         // cierro el de read end del pipe, no me interesa desde player.c
-        close(pipefd[PIPE_READ_END]);
+        close(pipefd[PIPE_READ_END]); // TODO !! mover a master.c
 
 
         // calculo siguiente jugada
