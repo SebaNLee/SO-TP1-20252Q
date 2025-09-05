@@ -32,25 +32,12 @@ int main(int argc, char * argv[]) {
     while(!state->isGameOver)
     {
         sem_wait(&sync->send_move[playerID]);
-        
-        int pipefd[2];
-
-        if(pipe(pipefd) == -1)
-        {
-            perror("pipe error in player.c");
-            exit(1);
-        }
-
-        // cierro el de read end del pipe, no me interesa desde player.c
-        close(pipefd[PIPE_READ_END]); // TODO !! mover a master.c
 
 
-        // calculo siguiente jugada
-        unsigned char nextMove = computeNextMove(); // TODO debería pasar parámetros como board, player, x, y, etc
+        unsigned char nextMove = computeNextMove();
 
-        // consigna: "El máster garantiza que el extremo de escritura de este pipe esté asociado al descriptor de archivo 1"
-        // escribo en write end del pipe (pasar siguiente jugada)
-        write(STDOUT_FILENO, &nextMove, 1);
+        write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)); 
+
 
         
     }
@@ -70,6 +57,6 @@ int main(int argc, char * argv[]) {
 unsigned char computeNextMove()
 {
     srand(time(NULL));
-
+    sleep(2);
     return rand() % 8;
 }

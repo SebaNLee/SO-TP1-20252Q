@@ -1,10 +1,12 @@
 
 #include "master.h"
+#include <sys/select.h>   
 #include "structs.h"
 #include <math.h>
 
-
-
+#define DIRECTION_OPTIONS 8
+int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1}; 
 
 
 
@@ -42,46 +44,93 @@ int main(int argc, char const *argv[]) {
     initView(params);
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
     
-
-
+    
+    int lastProcessedPlayer = 0;
 
     // ETC
 
+    // Cálculo de maxfd
+    int maxfd = 0;
+    for (int i = 0; i < state->numPlayers; i++) {
+        if (pipesfd[i][PIPE_READ_END] > maxfd)
+            maxfd = pipesfd[i][PIPE_READ_END];
+    }
+
+    // Seteo de timeout base
+    struct timeval timeIntervalBase;
+        timeIntervalBase.tv_sec = params.timeout;
+        timeIntervalBase.tv_usec = 0;     
+
+    
 
     while(!state->isGameOver)
     {
-        // TODO select() para esperar lecturas de pipes
-        // TODO semáforos
-        // TODO chequeo de movimiento válido
+        
         // TODO chequeo de tiempo (si levanto isGameOver o no)
         // TODO delay
 
+        sem_post(&sync->view_reading_pending);
+        sem_wait(&sync->view_writing_done);
 
-
-        // TODO debug
         
-        unsigned char move;
+        for (int i = 0 ; i < state->numPlayers; i++) { 
+            sem_post(&sync->send_move[i]); 
+        }
+        
+
+        // Crear el set de pipes que se leen en select
+        fd_set fds;
+        FD_ZERO(&fds);
         for (int i = 0; i < state->numPlayers; i++) {
+            if (!state->players[i].isBlocked)
+                FD_SET(pipesfd[i][PIPE_READ_END], &fds);
+        }
 
-            // hardcodeo, levanto semáforos
-            sem_post(&sync->send_move[i]);
+        // Reseteo el timeout
+        struct timeval timeInterval = timeIntervalBase;
+        
 
-            // creo que por acá iría el select()
+        // Esperar movimiento de algún jugador
+        int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
+        /*
+           Qué pasa con select? 
+           Supongamos que tenemos 3 jugadores con fd [4, 5, 6]. Si solo el fd 5 tiene datos, despues del select el fds queda únicamente con el 5. Los otros desaparecen.
+            Con el intervalo de tiempo pasa lo mismo, lo modifica. 
+        */
+        if (activity < 0) {
+            perror("Failed in function select");
+            break;
+        }
 
-            int n =read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
-            if(n > 0)
-                printf("Jugador %d hizo jugada: %d\n", i, move);
+        int start = (lastProcessedPlayer++) % state->numPlayers;
 
-            // por ahora funciona para el jugador 0, pero el pipe está andando
-            // creo que falla por lo de select()
+        printf("Llegamos hasta aca!\n");
 
-            // hardcodeo, view imprime una vez
-            // TODO creo que no anda por lo de MUTEX
-            sem_post(&sync->view_reading_pending);
+        for (int offset = 0; offset < state->numPlayers; offset++) {
+            int i = (start + offset) % state->numPlayers;
+
+            if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
+                unsigned char move;
+                int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+                printf("Procesando movimientos...\n");
+                // REVISAR USO
+                if (n == 0) {
+                    state->players[i].isBlocked = 1;
+                } else if (n < 0) {
+                    perror("Failed to read");
+                } else {
+                    processPlayerMove(state, sync, i, move);
+
+                    sem_post(&sync->send_move[i]);
+                    
+                }
+            }
 
         }
-        //
 
+        
+
+        
 
 
     }
@@ -105,6 +154,35 @@ int main(int argc, char const *argv[]) {
 
     // TODO borrar debug
     printf("OK!\n");
+
+}
+
+
+void processPlayerMove( GameState * state, GameSync * sync, int i, unsigned char move ) {
+    char diry = rowMov[move];
+    char dirx = columnMov[move];
+
+    sem_wait(&sync->mutex_writer);
+
+    validateMove(state, i, dirx, diry);
+    
+    sem_post(&sync->mutex_writer);
+
+}
+
+void validateMove(GameState * state, int i, char dirx, char diry) {
+
+    int finalXpos = state->players[i].x + dirx;
+    int finalYpos = state->players[i].y + diry;
+    if ( finalXpos < 0 || finalXpos >= state->width || finalYpos < 0 || finalYpos >= state->height || state->board[finalXpos + state->width * finalYpos] <= 0) {
+        state->players[i].invalidMoves++;
+    } else {
+        state->players[i].score += state->board[finalXpos + state->width * finalYpos];
+        state->players[i].validMoves++;
+        state->board[finalXpos + state->width * finalYpos] = -i;
+        state->players[i].x = finalXpos;
+        state->players[i].y = finalYpos;
+    }
 
 }
 

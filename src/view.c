@@ -169,9 +169,6 @@ int main(int argc, char * argv[]) {
 
         sem_post(&sync->view_writing_done);
     }
-    
-
-    sem_post(&sync->view_writing_done); // TODO este tal vez está de más
 
     
     // desconectar de mem compartida

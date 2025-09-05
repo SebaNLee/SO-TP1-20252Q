@@ -26,6 +26,9 @@ void freePipes(int pipesfd[][2], int numPlayers);
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2]);
 void initView(MasterParameters params);
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers);
+void processPlayerMove( GameState * state, GameSync * sync, int i, unsigned char move );
+void validateMove(GameState * state, int i, char dirx, char diry);
+
 
 
 
