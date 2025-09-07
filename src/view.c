@@ -295,27 +295,33 @@ int main(int argc, char * argv[]) {
     const char * color2;
     const char * color3;
 
+    
     for (int i = 0; i < state->numPlayers; i++) {
         if (state->players[i].pid == leaderboard[0]->pid)
             color1 = colors[i];
-        else if (state->players[i].pid == leaderboard[1]->pid)  
+        else if (state->players[i].pid == leaderboard[1]->pid && state->numPlayers > 1)  
             color2 = colors[i];
-        else if (state->players[i].pid == leaderboard[2]->pid)      
+        else if (state->players[i].pid == leaderboard[2]->pid && state->numPlayers > 2)       
             color3 = colors[i];
     }
 
     for (int i = 0; i < 7; i++) {
         tabulate(width, RESET);
-        fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color2); fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color1); fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color3);
+        fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17, (state->numPlayers > 1) ? color2 : RESET);
+        fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color1); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17, (state->numPlayers > 2) ? color3 : RESET);
         newLine();
     }
 
     for (int i = 8; i > 0; i--) {
         tabulate(width, RESET);
         fillSpacesWithColor(2, RESET);
-        fillSpacesWithColor(i, color2); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, color2); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(i, (state->numPlayers > 1) ? color2 : RESET); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, (state->numPlayers > 1) ? color2 : RESET);
+        fillSpacesWithColor(2, RESET);
         fillSpacesWithColor(i, color1); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, color1); fillSpacesWithColor(2, RESET);
-        fillSpacesWithColor(i, color3); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, color3); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(i, (state->numPlayers > 2) ? color3 : RESET); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, (state->numPlayers > 2) ? color3 : RESET);
+        fillSpacesWithColor(2, RESET);
         newLine();
     }
 
@@ -331,35 +337,62 @@ int main(int argc, char * argv[]) {
 
     tabulate(width, RESET);
     fillSpacesWithColor(2, RESET);
-    fillSpacesWithColor(7, RESET); printf("🦆"); fillSpacesWithColor(8+2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
+    fillSpacesWithColor(7, RESET); 
+    if (state->numPlayers > 1) {
+        printf("🦆");
+    } else {
+        printf("  ");
+    }
+    fillSpacesWithColor(8+2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
 
     for (int i = 0; i < 3; i++) {
         tabulate(width, RESET);
         fillSpacesWithColor(2, RESET);
-        fillSpacesWithColor(17, SILVER_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
+        fillSpacesWithColor(17, (state->numPlayers > 1) ? SILVER_BG : RESET); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
     }
 
     tabulate(width, RESET);
     fillSpacesWithColor(2, RESET);
-    fillSpacesWithColor(17, SILVER_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(2, RESET);
-    fillSpacesWithColor(7, RESET); printf("🦆"); fillSpacesWithColor(8, RESET); newLine();
+    fillSpacesWithColor(17, (state->numPlayers > 1) ? SILVER_BG : RESET); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(2, RESET);
+    fillSpacesWithColor(7, RESET); 
+    if (state->numPlayers > 2) {
+        printf("🦆");
+    } else {
+        printf("  ");
+    }
+     fillSpacesWithColor(8, RESET); newLine();
 
     for (int i = 0; i < 5; i++) {
         tabulate(width, RESET);
         fillSpacesWithColor(2, RESET);
-        fillSpacesWithColor(17, SILVER_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, BRONZE_BG); newLine();
+        fillSpacesWithColor(17, (state->numPlayers > 1) ? SILVER_BG : RESET); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17, (state->numPlayers > 2) ? BRONZE_BG : RESET); newLine();
     }
 
     tabulate(width, RESET);
-    int padding = 17 - strlen(leaderboard[1]->name);
-    int left = padding / 2;
-    int right = padding - left;  
+    int padding, left, right;  
     fillSpacesWithColor(2, RESET);
-    fillSpacesWithColor(left, RESET); printf("%s", leaderboard[1]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET);
-    padding = 17 - strlen(leaderboard[1]->name);
+    if (state->numPlayers > 1) {
+        padding = 17 - strlen(leaderboard[1]->name);
+        left = padding / 2;
+        right = padding - left; 
+        fillSpacesWithColor(left, RESET); printf("%s", leaderboard[1]->name); fillSpacesWithColor(right, RESET); 
+    } else {
+        fillSpacesWithColor(17, RESET);
+    }
+    fillSpacesWithColor(2, RESET);
+    padding = 17 - strlen(leaderboard[0]->name);
+    left = padding / 2;
+    right = padding - left;
     fillSpacesWithColor(left, RESET); printf("%s", leaderboard[0]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET);
-    padding = 17 - strlen(leaderboard[2]->name);
-    fillSpacesWithColor(left, RESET); printf("%s", leaderboard[2]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET); newLine();
+    if (state->numPlayers > 2) {
+        padding = 17 - strlen(leaderboard[2]->name);
+        left = padding / 2;
+        right = padding - left;
+        fillSpacesWithColor(left, RESET); printf("%s", leaderboard[2]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET); 
+    }
+    newLine();
     // desconectar de mem compartida
     closeSHM(state, stateSize);
     closeSHM(sync, syncSize);

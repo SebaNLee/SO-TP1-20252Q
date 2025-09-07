@@ -56,7 +56,5 @@ int main(int argc, char * argv[]) {
 
 unsigned char computeNextMove()
 {
-    srand(time(NULL));
-    
-    return rand() % 8;
+    return(0);
 }
