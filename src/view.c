@@ -6,39 +6,108 @@
 #define YELLOW  "\033[43m"
 #define BLUE    "\033[44m"
 #define MAGENTA "\033[45m"
-#define CYAN    "\033[46m"
+
 #define WHITE   "\033[47m"
 #define BRIGHT_BLUE     "\033[104m"
 #define BRIGHT_MAGENTA   "\033[105m"
+#define ORANGE  "\033[48;2;255;165;0m"
+#define BLACK   "\033[48;2;0;0;0m"
+#define CYAN    "\033[48;2;0;255;255m"
 #define GOLD_BG   "\033[48;2;212;175;55m"   
 #define SILVER_BG "\033[48;2;192;192;192m"  
-#define BRONZE_BG "\033[48;2;205;127;50m"   
+#define BRONZE_BG "\033[48;2;205;127;50m"  
+#define BROWN_BG   "\033[48;2;184;122;92m"
+#define DARK_BROWN "\033[48;2;150;75;50m"
+#define GRASS       "\033[48;2;28;134;58m"
+#define TAB_NUMBER  8
+#define TIMES_TAB(width) (width/3) 
 
 
-const char* colors[] = {RED, BLUE, GREEN, YELLOW, MAGENTA, CYAN, WHITE, BRIGHT_BLUE, BRIGHT_MAGENTA, GOLD_BG, SILVER_BG, BRONZE_BG};
+const char* colors[] = {RED, CYAN, GREEN, YELLOW, MAGENTA, ORANGE, WHITE, BRIGHT_MAGENTA, BLACK, GOLD_BG, SILVER_BG, BRONZE_BG};
 
-void printHeader(int columns) {
+void fillSpacesWithColor(int spaces, const char * color) {
+    for (int i = 0; i < spaces; i++) {
+        printf("%s ", color);
+    }
+}
+
+void printLineColor(int width, const char * color) {
+    tabulate(width, color);
+    for (int i = 0; i < 4 * width + 1; i++) {
+        printf(" ");
+    }
+    tabulate(width, color);
+    
+}
+
+void printTitle(int width) {
+    printLineColor(width, DARK_BROWN); newLine();
+    int centerWidth = 2 * 8 * (int)TIMES_TAB(width) - 4 + 4*width + 1;
+    printf("%s  ", DARK_BROWN); fillSpacesWithColor(centerWidth, BROWN_BG); printf("%s  ", DARK_BROWN); newLine();
+
+    char * title = "🏆 QUACKCHAMPS🏆";
+    int visualLength = strlen(title) - 2*4 + 2*2; 
+    int leftSpaces  = (centerWidth - visualLength) / 2;
+    int rightSpaces = centerWidth - visualLength - leftSpaces;
+
+    printf("%s  ", DARK_BROWN);
+    fillSpacesWithColor(leftSpaces, BROWN_BG);
+    printf("%s", title);
+    fillSpacesWithColor(rightSpaces, BROWN_BG);
+    printf("%s  ", DARK_BROWN); newLine();
+
+    printf("%s  ", DARK_BROWN); fillSpacesWithColor(centerWidth, BROWN_BG); printf("%s  ", DARK_BROWN); newLine();
+    printLineColor(width, DARK_BROWN); 
+    
+}
+
+void tabulate(int width, const char * color) {
+    for (int i = 0; i < TIMES_TAB(width); i++) {
+        fillSpacesWithColor(TAB_NUMBER, color);
+    }
+}
+
+void newLine() {
+    printf("%s\x1b[K\n", RESET);
+}
+
+void printHeader(int columns, int rows) {
         int counter = 1;
-        printf("╔");
+        printf("%s\n", GRASS);
+        tabulate(columns, GRASS);
+        printf("%s╔", BRIGHT_BLUE);
         while (counter++ < columns) {
             printf("═══╦");
         }
-        printf("═══╗\n");
+        printf("═══╗%s", GRASS);
+        tabulate(columns, GRASS);
+        if (rows == 10) {
+            fillSpacesWithColor(TAB_NUMBER, RESET);
+            printf("%s     LEADERBOARD    |  PT | VM | IM |", BROWN_BG);
+        }
+        newLine();
+
 }
 
-void printTableContent(GameState * state, int width, int height) {
+void printTableContent(GameState * state, int width, int height, Player ** leaderboard) {
 
     
 
     int numPlayers = state->numPlayers;
     int * board = state->board;
     Player * players = state->players;
+    int numPlayersProcessed = (height==10) ? 0 : numPlayers+1;
     
-    
-    printHeader(width);
+    int ScreenWidth = 2 * width/3 + 4* width + 1;  
+
+    printTitle(width);
+    int topPadding = (height - state->numPlayers) / 2;
+    printHeader(width, height);
     
 
     for (int i = 0; i < height; i++) {
+        tabulate(width, GRASS);
+        printf("%s", BRIGHT_BLUE);
         for (int j = 0; j < width; j++) {
             
             int val = board[i * width + j];
@@ -50,9 +119,9 @@ void printTableContent(GameState * state, int width, int height) {
 
             if(val <= 0) {
                 if (isHead) {
-                    printf("║%s🦆 %s", colors[abs(val)], RESET);
+                    printf("║%s🦆 %s", colors[abs(val)], BRIGHT_BLUE);
                 } else {
-                    printf("║%s   %s", colors[abs(val)], RESET); 
+                    printf("║%s   %s", colors[abs(val)], BRIGHT_BLUE); 
                 }
             } else {
                 printf("║ %d ", val);
@@ -60,13 +129,52 @@ void printTableContent(GameState * state, int width, int height) {
 
             
         }
-        printf("║\n");
+        printf("║%s", GRASS);
+        tabulate(width, GRASS);
+        if (i - topPadding == 0 && height != 10) {
+            numPlayersProcessed = -1;
+        }
+        if (numPlayersProcessed < numPlayers) {
+            if (numPlayersProcessed < 0) {
+                fillSpacesWithColor(TAB_NUMBER, RESET);
+                printf("%s     LEADERBOARD    |  PT | VM | IM |", BROWN_BG);
+            } else {
+                fillSpacesWithColor(TAB_NUMBER, RESET);
+                int numPlayer;
+                for(int j = 0; j < state->numPlayers; j++)
+                {
+                    if(leaderboard[numPlayersProcessed]->pid == state->players[j].pid)
+                    {   
+                        numPlayer = j;
+                    }
+                }
+                printf("%s|%s  %d°. %s|%s %s", BROWN_BG, (9+numPlayersProcessed <= 11) ? colors[9+numPlayersProcessed] : RESET, numPlayersProcessed+1, BROWN_BG,
+                colors[numPlayer], leaderboard[numPlayersProcessed]->name);
+                fillSpacesWithColor(11 - strlen(leaderboard[numPlayersProcessed]->name), colors[numPlayer]);
+                printf("| %d%s |", leaderboard[numPlayersProcessed]->score, (leaderboard[numPlayersProcessed]->score < 100) ? 
+                                   ((leaderboard[numPlayersProcessed]->score < 10) ?  "  " : " ") : "");
+                printf(" %d%s |", leaderboard[numPlayersProcessed]->validMoves, (leaderboard[numPlayersProcessed]->validMoves < 10) ? " " : "" );
+                printf(" %d%s %s|", leaderboard[numPlayersProcessed]->invalidMoves, (leaderboard[numPlayersProcessed]->invalidMoves < 10) ? " " : "", BROWN_BG);
+            }
+            
+        }
+
+        newLine();
+
         if (i+1 < state->height) {
-            printf("╠═══");
+            printf("%s", GRASS);
+            tabulate(width, GRASS);
+            printf("%s╠═══", BRIGHT_BLUE);
             for (int j = 1; j < width; j++) {
                 printf("╬═══");
             }
-            printf("╣\n");
+            printf("╣%s", GRASS);
+            tabulate(width, GRASS);
+            if (numPlayersProcessed++ < numPlayers) {
+                fillSpacesWithColor(TAB_NUMBER, RESET);
+                printf("%s-------------------------------------", BROWN_BG);    
+            }
+            newLine();
         } 
     }
 
@@ -75,11 +183,15 @@ void printTableContent(GameState * state, int width, int height) {
 
 void printBase(int columns) {
     int counter = 1;
-        printf("╚");
+        printf("%s", GRASS);
+        tabulate(columns, GRASS);
+        printf("%s╚", BRIGHT_BLUE);
         while (counter++ < columns) {
             printf("═══╩");
         }
-        printf("═══╝\n");
+        printf("═══╝%s", GRASS);
+        tabulate(columns, GRASS);
+        newLine();
 }
 
 int comparePlayersPositions(const void *a, const void *b) {
@@ -130,11 +242,9 @@ int main(int argc, char * argv[]) {
         // este me sirve de debug de player.c
         printf("###  validMoves P1: %d    ###\n", state->players[0].validMoves);
         printf("###  invalidMoves P1: %d  ###\n", state->players[0].invalidMoves);
+        
         printf("\n");
 
-        printTableContent(state, width, height); // TODO, esto lo de pasar todo el state puede estar mal
-
-        
         Player * leaderboard[state->numPlayers];
         // Se llena el leaderboard con ids de jugadores
         for (int i=0; i < state->numPlayers; i++) {                 
@@ -142,6 +252,8 @@ int main(int argc, char * argv[]) {
         }
 
         qsort(leaderboard, state->numPlayers, sizeof(Player *), comparePlayersPositions);
+
+        printTableContent(state, width, height, leaderboard); // TODO, esto lo de pasar todo el state puede estar mal
 
 
 
@@ -168,9 +280,86 @@ int main(int argc, char * argv[]) {
         }
 
         sem_post(&sync->view_writing_done);
+    } 
+
+    // Final leaderboard. TODO, que lo haga el master esto de ordenar jugadores
+    Player * leaderboard[state->numPlayers];
+    // Se llena el leaderboard con ids de jugadores
+    for (int i=0; i < state->numPlayers; i++) {                 
+        leaderboard[i] = &state->players[i];                                     
     }
 
-    
+    qsort(leaderboard, state->numPlayers, sizeof(Player *), comparePlayersPositions);
+
+    const char * color1; 
+    const char * color2;
+    const char * color3;
+
+    for (int i = 0; i < state->numPlayers; i++) {
+        if (state->players[i].pid == leaderboard[0]->pid)
+            color1 = colors[i];
+        else if (state->players[i].pid == leaderboard[1]->pid)  
+            color2 = colors[i];
+        else if (state->players[i].pid == leaderboard[2]->pid)      
+            color3 = colors[i];
+    }
+
+    for (int i = 0; i < 7; i++) {
+        tabulate(width, RESET);
+        fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color2); fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color1); fillSpacesWithColor(2, RESET), fillSpacesWithColor(17, color3);
+        newLine();
+    }
+
+    for (int i = 8; i > 0; i--) {
+        tabulate(width, RESET);
+        fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(i, color2); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, color2); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(i, color1); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, color1); fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(i, color3); fillSpacesWithColor(17-2*i, RESET); fillSpacesWithColor(i, color3); fillSpacesWithColor(2, RESET);
+        newLine();
+    }
+
+    tabulate(width, RESET);
+    fillSpacesWithColor(2, RESET);
+    fillSpacesWithColor(17+1, RESET); fillSpacesWithColor(8, RESET); printf("🦆"); fillSpacesWithColor(8, RESET); fillSpacesWithColor(17+2, RESET); newLine();
+
+    for (int i = 0; i < 3; i++) {
+        tabulate(width, RESET);
+        fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17+2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
+    }
+
+    tabulate(width, RESET);
+    fillSpacesWithColor(2, RESET);
+    fillSpacesWithColor(7, RESET); printf("🦆"); fillSpacesWithColor(8+2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
+
+    for (int i = 0; i < 3; i++) {
+        tabulate(width, RESET);
+        fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17, SILVER_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(17+2, RESET); newLine();
+    }
+
+    tabulate(width, RESET);
+    fillSpacesWithColor(2, RESET);
+    fillSpacesWithColor(17, SILVER_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(2, RESET);
+    fillSpacesWithColor(7, RESET); printf("🦆"); fillSpacesWithColor(8, RESET); newLine();
+
+    for (int i = 0; i < 5; i++) {
+        tabulate(width, RESET);
+        fillSpacesWithColor(2, RESET);
+        fillSpacesWithColor(17, SILVER_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, GOLD_BG); fillSpacesWithColor(2, RESET); fillSpacesWithColor(17, BRONZE_BG); newLine();
+    }
+
+    tabulate(width, RESET);
+    int padding = 17 - strlen(leaderboard[1]->name);
+    int left = padding / 2;
+    int right = padding - left;  
+    fillSpacesWithColor(2, RESET);
+    fillSpacesWithColor(left, RESET); printf("%s", leaderboard[1]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET);
+    padding = 17 - strlen(leaderboard[1]->name);
+    fillSpacesWithColor(left, RESET); printf("%s", leaderboard[0]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET);
+    padding = 17 - strlen(leaderboard[2]->name);
+    fillSpacesWithColor(left, RESET); printf("%s", leaderboard[2]->name); fillSpacesWithColor(right, RESET); fillSpacesWithColor(2, RESET); newLine();
     // desconectar de mem compartida
     closeSHM(state, stateSize);
     closeSHM(sync, syncSize);

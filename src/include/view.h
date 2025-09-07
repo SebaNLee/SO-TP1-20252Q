@@ -3,12 +3,19 @@
 
 #include "structs.h"
 #include "shm.h"
+#include <math.h>
 #include <string.h>
 
 
-void printHeader(int columns);
+void tabulate(int width, const char * color);
 
-void printTableContent(GameState * state, int width, int height);
+void printTitle(int width);
+
+void newLine();
+
+void printHeader(int columns, int rows);
+
+void printTableContent(GameState * state, int width, int height, Player ** leaderboard);
 
 void printBase(int columns);
 
