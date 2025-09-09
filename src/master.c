@@ -52,8 +52,8 @@ int main(int argc, char const *argv[]) {
 
     while(!state->isGameOver)
     {
+        usleep(params.delay * 1000);
 
-        // TODO delay
 
         sem_post(&sync->view_reading_pending);
         sem_wait(&sync->view_writing_done);
