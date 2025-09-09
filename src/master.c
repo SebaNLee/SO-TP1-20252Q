@@ -35,10 +35,6 @@ int main(int argc, char const *argv[]) {
     int pipesfd[state->numPlayers][2];
     initPipes(pipesfd, state->numPlayers);
 
-    // la idea es que quiero reemplazar los fd de STDOUT y STDIN de los players por lso fd del pide del master 
-    // fork por cada jugador
-    // dup2 para reemplazar STDOUT de cada jugador
-
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
     initView(params);
@@ -65,14 +61,14 @@ int main(int argc, char const *argv[]) {
 
     while(!state->isGameOver)
     {
-        
-        // TODO chequeo de tiempo (si levanto isGameOver o no)
+
         // TODO delay
 
         sem_post(&sync->view_reading_pending);
         sem_wait(&sync->view_writing_done);
 
         
+        // debug
         for (int i = 0 ; i < state->numPlayers; i++) { 
             sem_post(&sync->send_move[i]); 
         }
@@ -87,7 +83,7 @@ int main(int argc, char const *argv[]) {
         }
 
         // Reseteo el timeout
-        struct timeval timeInterval = timeIntervalBase;
+        struct timeval timeInterval = timeIntervalBase; // TODO esto habría que chequear si resetea bien
         
 
         // Esperar movimiento de algún jugador
@@ -106,6 +102,8 @@ int main(int argc, char const *argv[]) {
 
         printf("Llegamos hasta aca!\n");
 
+        // TODO mutex y escribo
+        // TODO check: inanición, timeout, isBlocked, mutex, G[]
         for (int offset = 0; offset < state->numPlayers; offset++) {
             int i = (start + offset) % state->numPlayers;
 
@@ -128,15 +126,16 @@ int main(int argc, char const *argv[]) {
 
         }
 
-        
+        // TODO libero mutex
 
         
-
-
     }
 
 
-    // ETC
+    // TODO post/signal a view para el último print
+
+
+    // TODO wait para no dejar zombies 
 
 
 
