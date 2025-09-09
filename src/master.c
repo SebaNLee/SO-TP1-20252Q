@@ -45,17 +45,8 @@ int main(int argc, char const *argv[]) {
 
     // ETC
 
-    // Cálculo de maxfd
-    int maxfd = 0;
-    for (int i = 0; i < state->numPlayers; i++) {
-        if (pipesfd[i][PIPE_READ_END] > maxfd)
-            maxfd = pipesfd[i][PIPE_READ_END];
-    }
 
-    // Seteo de timeout base
-    struct timeval timeIntervalBase;
-        timeIntervalBase.tv_sec = params.timeout;
-        timeIntervalBase.tv_usec = 0;     
+
 
     
 
@@ -77,15 +68,22 @@ int main(int argc, char const *argv[]) {
         // Crear el set de pipes que se leen en select
         fd_set fds;
         FD_ZERO(&fds);
+
+        // Cálculo de maxfd
+        int maxfd = 0;
+        for (int i = 0; i < state->numPlayers; i++) {
+            if (pipesfd[i][PIPE_READ_END] > maxfd)
+                maxfd = pipesfd[i][PIPE_READ_END];
+        }
+
         for (int i = 0; i < state->numPlayers; i++) {
             if (!state->players[i].isBlocked)
                 FD_SET(pipesfd[i][PIPE_READ_END], &fds);
         }
 
-        // Reseteo el timeout
-        struct timeval timeInterval = timeIntervalBase; // TODO esto habría que chequear si resetea bien
+        // Seteo de timeout base
+        struct timeval timeInterval = {.tv_sec = params.timeout, .tv_usec = 0}; 
         
-
         // Esperar movimiento de algún jugador
         int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
         /*
@@ -128,7 +126,7 @@ int main(int argc, char const *argv[]) {
 
         // TODO libero mutex
 
-        
+
     }
 
 
