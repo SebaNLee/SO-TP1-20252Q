@@ -140,7 +140,6 @@ int main(int argc, char const *argv[]) {
 
 
 
-
     // libero pipes
     freePipes(pipesfd, state->numPlayers);
 
