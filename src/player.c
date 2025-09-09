@@ -31,6 +31,7 @@ int main(int argc, char * argv[]) {
 
     while(!state->isGameOver)
     {
+        // TODO agregar mutex
         sem_wait(&sync->send_move[playerID]);
 
 
