@@ -126,7 +126,6 @@ int main(int argc, char const *argv[]) {
     // libero pipes
     freePipes(pipesfd, state->numPlayers);
 
-    freeGameState(state);
     freeGameSync(sync);
     
     closeSHM(state, sizeof(GameState) + params.width * params.height * sizeof(int));

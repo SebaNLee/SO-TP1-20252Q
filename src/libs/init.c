@@ -61,19 +61,6 @@ void initGameSync(GameSync * sync)
 }
 
 
-
-int freeGameState(GameState * state)
-{
-    // TODO liberar los memset de player y board
-
-
-
-    return ERROR; // TODO
-}
-
-
-
-
 int freeGameSync(GameSync * sync) {
    if( sem_destroy(&sync->view_reading_pending)==ERROR){
     perror("sem_destroy view_reading_pending\n");
