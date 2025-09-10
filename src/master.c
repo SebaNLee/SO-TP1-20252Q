@@ -123,7 +123,14 @@ int main(int argc, char const *argv[]) {
                     } else if (n < 0) {
                         perror("Failed to read");
                     } else {
-                        processPlayerMove(state, sync, i, move);
+                        char diry = rowMov[move];
+                        char dirx = columnMov[move];
+
+                        sem_wait(&sync->mutex_game_state_access);
+
+                        processMove(state, i, dirx, diry);
+                        
+                        sem_post(&sync->mutex_game_state_access);
 
                         sem_post(&sync->move_processed[i]);
                         
@@ -164,7 +171,6 @@ int main(int argc, char const *argv[]) {
     printf("OK!\n");
 
 }
-
 
 void processPlayerMove( GameState * state, GameSync * sync, int i, unsigned char move ) {
     char diry = rowMov[move];
