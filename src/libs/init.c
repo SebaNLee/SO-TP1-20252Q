@@ -142,7 +142,7 @@ void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
 }
 
 
-void initView(MasterParameters params)
+int initView(MasterParameters params)
 {
     // análogo a initPlayers, sin lo de pipes
 
@@ -164,7 +164,7 @@ void initView(MasterParameters params)
         execv(params.view, viewArgv); // TODO tal vez esto es execve? no entiendo la parte de envp ??
     }
     
-    return;
+    return pid;
 }
 
 
@@ -193,4 +193,27 @@ void freePipes(int pipesfd[][2], int numPlayers)
     }
 
     return;
+}
+
+
+void waitViewAndPlayers(GameState * state, int viewPID)
+{
+    int wstatus;
+
+    // view
+    waitpid(viewPID, &wstatus, 0);
+    if (WIFEXITED(wstatus))
+    {
+        printf("View exited (%d)\n", WEXITSTATUS(wstatus));
+    }
+
+    // players
+    for (size_t i = 0; i < state->numPlayers; i++)
+    {
+        waitpid(state->players[i].pid, &wstatus, 0);
+        if (WIFEXITED(wstatus))
+        {
+            printf("Player %s (%ld) exited (%d) with a score of %d / %d / %d\n", state->players[i].name, i, WEXITSTATUS(wstatus), state->players[i].score, state->players[i].validMoves, state->players[i].invalidMoves);
+        }
+    }
 }

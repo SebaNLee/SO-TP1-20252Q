@@ -36,7 +36,7 @@ int main(int argc, char const *argv[]) {
 
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
-    initView(params);
+    int viewPID = initView(params);
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
 
 
@@ -69,10 +69,15 @@ int main(int argc, char const *argv[]) {
         bool isGameEnd = false;
         PlayerMove playerMove = waitPlayerMove(state, pipesfd, params.timeout, startTime, &isGameEnd);
 
-        if(isGameEnd)
+        if(isGameEnd || time(NULL) - lastValidMoveTime > params.timeout)
         {
-            
             state->isGameOver = true;
+            
+            // derpierto a jugadores
+            for (int i = 0; i < state->numPlayers; i++) {
+                moveProcessedPostSync(sync, i);
+            }
+            
             break;
         }
 
@@ -80,6 +85,8 @@ int main(int argc, char const *argv[]) {
         if(playerMove.move == EOF)
         {
             state->players[playerMove.playerIndex].isBlocked = 1;
+
+            moveProcessedPostSync(sync, playerMove.playerIndex);
         }
         else
         {
@@ -100,28 +107,17 @@ int main(int argc, char const *argv[]) {
             // TOOO imprimir solo is hubo cambios ?
         }
 
-
-
-        if(time(NULL) - lastValidMoveTime > params.timeout)
-        {
-            state->isGameOver = true;
-        }
-
         if(validMove)
         {
             lastValidMoveTime = time(NULL);
         }
-        
-
     }
 
+    // último print de view
+    viewPrintSync(sync);
 
-    // TODO post/signal a view para el último print
-
-
-    // TODO wait para no dejar zombies 
-    // TODO guardar e imprimir valores de retorno de jugadores y view
-
+    // wait de procesos (para que no queden zombies)
+    waitViewAndPlayers(state, viewPID);
 
     // libero pipes
     freePipes(pipesfd, state->numPlayers);
