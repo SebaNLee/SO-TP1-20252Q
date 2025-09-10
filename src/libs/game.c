@@ -73,7 +73,13 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     }
 
     // Seteo de timeout base
-    struct timeval timeInterval = {.tv_sec = abs(timeout - (time(NULL) - startTime)), .tv_usec = 0}; // TODO cálculo de milisegundos?
+    int elapsed = (int)(time(NULL) - startTime);
+    int remaining = timeout - elapsed;
+    if (remaining < 0)
+    {
+        remaining = 0;
+    }
+    struct timeval timeInterval = {.tv_sec = remaining, .tv_usec = 0}; // TODO cálculo de milisegundos?
 
     // chequear si algún jugador mandó movimiento
     int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
