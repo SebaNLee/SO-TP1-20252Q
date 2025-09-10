@@ -38,11 +38,17 @@ int main(int argc, char * argv[]) {
         
         // región crítica de lectura
 
-        // TODO extraer datos o copiar GameState
+
+        size_t stateSize = sizeof(GameState) + state->width * state->height * sizeof(int);
+        GameState *localCopy = malloc(stateSize);
+        memcpy(localCopy, state, stateSize);
+        
         
         playerExitSync(sync);
 
-        unsigned char nextMove = computeNextMove();
+        unsigned char nextMove = computeNextMove(localCopy, playerID);
+
+        free(localCopy);
 
         write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)); 
     }
@@ -59,7 +65,7 @@ int main(int argc, char * argv[]) {
 
 
 
-unsigned char computeNextMove()
+unsigned char computeNextMove(GameState *localCopy, int playerID)
 {
     unsigned char moves[] = {0, 0, 2, 2, 4, 4, 6, 0, 1, 1, 1, 1, 1, 1};
     static int i = 0;
