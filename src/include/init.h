@@ -20,7 +20,6 @@
 
 void initGameState(GameState * state, MasterParameters parameters);
 void initGameSync(GameSync * sync);
-int freeGameState(GameState * state);
 int freeGameSync(GameSync * sync);
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2]);
 void initView(MasterParameters params);
