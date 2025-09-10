@@ -7,10 +7,6 @@
 #include "game.h"
 #include "init.h"
 
-#define DIRECTION_OPTIONS 8
-int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1}; 
-
 
 
 int main(int argc, char const *argv[]) {
@@ -90,13 +86,10 @@ int main(int argc, char const *argv[]) {
         }
         else
         {
-            char diry = rowMov[playerMove.move];
-            char dirx = columnMov[playerMove.move];
-
             masterEntrySync(sync);
 
             // región crítica de escritura
-            validMove = processMove(state, playerMove.playerIndex, dirx, diry);
+            validMove = processMove(state, playerMove.playerIndex, playerMove.move);
             
             masterExitSync(sync);
 

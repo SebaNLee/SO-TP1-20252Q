@@ -1,5 +1,8 @@
 #include "game.h"
 
+int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1}; 
+
 
 //separa el tablero por regiones y le asigna el centro de cada region a un jugador
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers){
@@ -30,7 +33,10 @@ void setPlayerPosition(GameState * state, int width, int height, int numPlayers)
 
 
 // devuelve true si es jugada válida, false si no es inválida
-bool processMove(GameState * state, int i, char dirx, char diry) {
+bool processMove(GameState * state, int i, unsigned char move) {
+
+    char diry = rowMov[move];
+    char dirx = columnMov[move];
 
     int finalXpos = state->players[i].x + dirx;
     int finalYpos = state->players[i].y + diry;
