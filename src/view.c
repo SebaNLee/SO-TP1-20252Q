@@ -226,9 +226,8 @@ int main(int argc, char * argv[]) {
     size_t stateSize = sizeof(GameState) + boardSize;
     size_t syncSize = sizeof(GameSync);
 
-    GameState * state = createSHM(GAME_STATE_SHM, stateSize, false, false);
-    GameSync * sync = createSHM(GAME_SYNC_SHM, syncSize, false, true);
-    
+    GameState * state = (GameState*) createSHM(GAME_STATE_SHM, stateSize, false, false);
+    GameSync * sync = (GameSync*) createSHM(GAME_SYNC_SHM, syncSize, false, true);
 
     while(!state->isGameOver)
     {
