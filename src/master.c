@@ -40,21 +40,10 @@ int main(int argc, char const *argv[]) {
     initPlayers(params, state, pipesfd);
     initView(params);
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
-    
 
 
     // inicializaciones para el ciclo principal
     int lastProcessedPlayer = 0;
-
-    // ETC
-
-
-    // en clase se dijo que se debían inicializar en 1, todos pueden mover
-    // TODO moverlo a init que está feo acá
-    for (int i = 0 ; i < state->numPlayers; i++) { 
-        sem_post(&sync->move_processed[i]); 
-    }
-
 
     // es por si otro procesos como view del master consumen demasiado tiempo
     // observar que al hacer strace, ChomChamps hace a veces 10s o 9s con -t 10
@@ -63,6 +52,12 @@ int main(int argc, char const *argv[]) {
     // para terminar el juego si no hubo movimientos válidos en timeout tiempo
     time_t lastValidMoveTime = time(NULL);
     bool validMove;
+
+    // en clase se dijo que se debían inicializar en 1, todos pueden mover
+    // TODO moverlo a init que está feo acá
+    for (int i = 0 ; i < state->numPlayers; i++) { 
+        sem_post(&sync->move_processed[i]); 
+    }
 
     while(!state->isGameOver)
     {
@@ -113,7 +108,6 @@ int main(int argc, char const *argv[]) {
         {
             int start = (lastProcessedPlayer++) % state->numPlayers;
 
-            // TODO check: inanición, timeout, isBlocked, mutex, G[]
             for (int offset = 0; offset < state->numPlayers; offset++) {
                 
                 int i = (start + offset) % state->numPlayers;
@@ -122,8 +116,6 @@ int main(int argc, char const *argv[]) {
                     
                     unsigned char move;
                     int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
-
-                    printf("Procesando movimientos...\n");
 
                     // REVISAR USO
                     if (n < 0)
@@ -156,7 +148,6 @@ int main(int argc, char const *argv[]) {
 
                             break;
 
-                            // TODO tiemout por movs invalids
                             // TOOO imprimir solo is hubo cambios ?
                         }
                         
@@ -185,7 +176,7 @@ int main(int argc, char const *argv[]) {
 
 
     // TODO wait para no dejar zombies 
-
+    // TODO guardar e imprimir valores de retorno de jugadores y view
 
 
     // libero pipes
@@ -198,10 +189,9 @@ int main(int argc, char const *argv[]) {
     unlinkSHM(GAME_STATE_SHM);
     unlinkSHM(GAME_SYNC_SHM);
 
+    
 
-    // TODO borrar debug
-    printf("OK!\n");
-
+    return 0;
 }
 
 
