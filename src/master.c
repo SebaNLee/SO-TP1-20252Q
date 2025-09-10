@@ -40,29 +40,36 @@ int main(int argc, char const *argv[]) {
     initView(params);
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
     
-    
+
+
+    // inicializaciones para el ciclo principal
     int lastProcessedPlayer = 0;
 
     // ETC
 
 
+    // en clase se dijo que se debían inicializar en 1, todos pueden mover
+    // TODO moverlo a init que está feo acá
+    for (int i = 0 ; i < state->numPlayers; i++) { 
+        sem_post(&sync->send_move[i]); 
+    }
 
 
     
 
     while(!state->isGameOver)
     {
+        // es por si otro procesos como view consumen demasiado tiempo
+        // observar que al hacer strace, ChomChamps hace a veces 10s o 9s con -t 10
+        time_t startTime = time(NULL);
+
+        // indico a view que imprima y espero a que termine
         sem_post(&sync->view_reading_pending);
         sem_wait(&sync->view_writing_done);
 
+        // consigna, delay después de imprimir con view
         usleep(params.delay * 1000);
 
-        
-        // debug
-        for (int i = 0 ; i < state->numPlayers; i++) { 
-            sem_post(&sync->send_move[i]); 
-        }
-        
 
         // Crear el set de pipes que se leen en select
         fd_set fds;
@@ -75,56 +82,62 @@ int main(int argc, char const *argv[]) {
                 maxfd = pipesfd[i][PIPE_READ_END];
         }
 
+        // meto al set los pipes de los jugadores activos
         for (int i = 0; i < state->numPlayers; i++) {
             if (!state->players[i].isBlocked)
                 FD_SET(pipesfd[i][PIPE_READ_END], &fds);
         }
 
         // Seteo de timeout base
-        struct timeval timeInterval = {.tv_sec = params.timeout, .tv_usec = 0}; 
+        struct timeval timeInterval = {.tv_sec = abs(params.timeout - (time(NULL) - startTime)), .tv_usec = 0};
         
-        // Esperar movimiento de algún jugador
+        // chequear si algún jugador mandó movimiento
         int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
-        /*
-           Qué pasa con select? 
-           Supongamos que tenemos 3 jugadores con fd [4, 5, 6]. Si solo el fd 5 tiene datos, despues del select el fds queda únicamente con el 5. Los otros desaparecen.
-            Con el intervalo de tiempo pasa lo mismo, lo modifica. 
-        */
-        if (activity < 0) {
+        if (activity < 0)
+        {
             perror("Failed in function select");
-            break;
+            exit(1);
         }
+        // no hubo writes de jugadores en tiempo timeout (entonces salgo)
+        else if(activity == 0)
+        {
+            state->isGameOver = true;
+        }
+        // si hubo devoluciones, agarro con round robin al primer fd con datos
+        else if(activity > 0)
+        {
+            int start = (lastProcessedPlayer++) % state->numPlayers;
 
-        int start = (lastProcessedPlayer++) % state->numPlayers;
+            // TODO mutex y escribo
+            // TODO check: inanición, timeout, isBlocked, mutex, G[]
+            for (int offset = 0; offset < state->numPlayers; offset++) {
+                int i = (start + offset) % state->numPlayers;
 
-        printf("Llegamos hasta aca!\n");
+                if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
+                    unsigned char move;
+                    int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+                    printf("Procesando movimientos...\n");
+                    // REVISAR USO
+                    if (n == 0) {
+                        state->players[i].isBlocked = 1;
+                    } else if (n < 0) {
+                        perror("Failed to read");
+                    } else {
+                        processPlayerMove(state, sync, i, move);
 
-        // TODO mutex y escribo
-        // TODO check: inanición, timeout, isBlocked, mutex, G[]
-        for (int offset = 0; offset < state->numPlayers; offset++) {
-            int i = (start + offset) % state->numPlayers;
-
-            if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
-                unsigned char move;
-                int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
-                printf("Procesando movimientos...\n");
-                // REVISAR USO
-                if (n == 0) {
-                    state->players[i].isBlocked = 1;
-                } else if (n < 0) {
-                    perror("Failed to read");
-                } else {
-                    processPlayerMove(state, sync, i, move);
-
-                    sem_post(&sync->send_move[i]);
-                    
+                        sem_post(&sync->send_move[i]);
+                        
+                    }
                 }
+
             }
 
+
+            // TODO libero mutex
+
+
+
         }
-
-        // TODO libero mutex
-
 
     }
 
