@@ -32,14 +32,18 @@ MasterParameters setParams(int argc, char* const  argv[]){
     while ((op = getopt(argc, argv, "p:w:h:d:t:s:v:")) != -1) {
         switch (op) {
             case 'w':
-                if (atoi(optarg) >= 10) { // TODO salir con error, por mínimo
-                    params.width = atoi(optarg);
+                if (atoi(optarg) < 10) { 
+                    fprintf(stderr,"Error: Width selected must be of at least 10\n");
+                    exit(1);
                 }
+                params.width = atoi(optarg);
                 break;
             case 'h':
-                if (atoi(optarg) >= 10) { // TODO salir con error, por mínimo
-                    params.height= atoi(optarg);
+                if (atoi(optarg) < 10) {
+                   fprintf(stderr,"Error: Height selected must be of at least 10\n");
+                    exit(1);
                 }
+                params.height= atoi(optarg);
                 break;
             case 'd':
                 if (atoi(optarg) > 0) {
@@ -63,7 +67,7 @@ MasterParameters setParams(int argc, char* const  argv[]){
                 int idx = optind - 1;
                 while (argv[idx] != NULL && argv[idx][0] != '-') {
                     if (params.numPlayers >= MAXPLAYERS) {
-                        fprintf(stderr, "Error: At most 9 players can be specified using -p");
+                        fprintf(stderr, "Error: At most 9 players can be specified using -p\n");
                         exit(1);
                     }
                     params.players[params.numPlayers]= argv[idx];
