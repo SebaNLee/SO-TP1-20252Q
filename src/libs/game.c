@@ -48,3 +48,66 @@ bool processMove(GameState * state, int i, char dirx, char diry) {
     }
 
 }
+
+
+PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime, bool * isGameEnd)
+{
+    PlayerMove toReturn = {.playerIndex = -1, .move = EOF};
+    static int lastProcessedPlayer = 0;
+
+    // Crear el set de pipes que se leen en select
+    fd_set fds;
+    FD_ZERO(&fds);
+
+    // Cálculo de maxfd
+    int maxfd = 0;
+    for (int i = 0; i < state->numPlayers; i++) {
+        if (pipesfd[i][PIPE_READ_END] > maxfd)
+            maxfd = pipesfd[i][PIPE_READ_END];
+    }
+
+    // meto al set los pipes de los jugadores activos
+    for (int i = 0; i < state->numPlayers; i++) {
+        if (!state->players[i].isBlocked)
+            FD_SET(pipesfd[i][PIPE_READ_END], &fds);
+    }
+
+    // Seteo de timeout base
+    struct timeval timeInterval = {.tv_sec = abs(timeout - (time(NULL) - startTime)), .tv_usec = 0}; // TODO cálculo de milisegundos?
+
+    // chequear si algún jugador mandó movimiento
+    int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
+
+    if (activity < 0)
+    {
+        *isGameEnd = true;
+    }
+    // no hubo writes de jugadores en tiempo timeout (entonces salgo)
+    else if(activity == 0)
+    {
+        *isGameEnd = true;
+    }
+    // si hubo devoluciones, agarro con round robin al primer fd con datos
+    else if(activity > 0)
+    {
+        int start = (lastProcessedPlayer++) % state->numPlayers;
+
+        for (int offset = 0; offset < state->numPlayers; offset++) {
+            
+            int i = (start + offset) % state->numPlayers;
+
+            if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
+                
+                unsigned char move;
+                read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+
+                toReturn.playerIndex = i;
+                toReturn.move = move;
+
+                break;
+            }
+        }
+    }
+
+    return toReturn;
+}

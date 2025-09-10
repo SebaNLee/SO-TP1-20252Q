@@ -40,9 +40,6 @@ int main(int argc, char const *argv[]) {
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
 
 
-    // inicializaciones para el ciclo principal
-    int lastProcessedPlayer = 0;
-
     // es por si otro procesos como view del master consumen demasiado tiempo
     // observar que al hacer strace, ChomChamps hace a veces 10s o 9s con -t 10
     time_t startTime;
@@ -68,93 +65,42 @@ int main(int argc, char const *argv[]) {
         // consigna, delay después de imprimir con view
         usleep(params.delay * 1000);
 
+        // espero jugada
+        bool isGameEnd = false;
+        PlayerMove playerMove = waitPlayerMove(state, pipesfd, params.timeout, startTime, &isGameEnd);
 
-        // Crear el set de pipes que se leen en select
-        fd_set fds;
-        FD_ZERO(&fds);
-
-        // Cálculo de maxfd
-        int maxfd = 0;
-        for (int i = 0; i < state->numPlayers; i++) {
-            if (pipesfd[i][PIPE_READ_END] > maxfd)
-                maxfd = pipesfd[i][PIPE_READ_END];
-        }
-
-        // meto al set los pipes de los jugadores activos
-        for (int i = 0; i < state->numPlayers; i++) {
-            if (!state->players[i].isBlocked)
-                FD_SET(pipesfd[i][PIPE_READ_END], &fds);
-        }
-
-        // Seteo de timeout base
-        struct timeval timeInterval = {.tv_sec = abs(params.timeout - (time(NULL) - startTime)), .tv_usec = 0}; // TODO cálculo de milisegundos?
-
-        // chequear si algún jugador mandó movimiento
-        int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
-        if (activity < 0)
+        if(isGameEnd)
         {
-            perror("Failed in function select");
-            exit(1);
-        }
-        // no hubo writes de jugadores en tiempo timeout (entonces salgo)
-        else if(activity == 0)
-        {
+            
             state->isGameOver = true;
+            break;
         }
-        // si hubo devoluciones, agarro con round robin al primer fd con datos
-        else if(activity > 0)
+
+        // TODO chequear EOF en consigna
+        if(playerMove.move == EOF)
         {
-            int start = (lastProcessedPlayer++) % state->numPlayers;
-
-            for (int offset = 0; offset < state->numPlayers; offset++) {
-                
-                int i = (start + offset) % state->numPlayers;
-
-                if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
-                    
-                    unsigned char move;
-                    int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
-
-                    // REVISAR USO
-                    if (n < 0)
-                    {
-                        perror("Failed to read");
-                        exit(1);
-                    }
-                    else
-                    {
-                        // TODO chequear EOF en consigna
-                        if(move == EOF)
-                        {
-                            state->players[i].isBlocked = 1;
-                        }
-                        else
-                        {
-                            char diry = rowMov[move];
-                            char dirx = columnMov[move];
-
-                            masterEntrySync(sync);
-
-                            // región crítica de escritura
-                            validMove = processMove(state, i, dirx, diry);
-                            
-                            masterExitSync(sync);
-
-                            // TODO acá mismo agregar lo de levantar isBlocked si el jugador que jugó está bloqueado
-
-                            moveProcessedPostSync(sync, i);
-
-                            break;
-
-                            // TOOO imprimir solo is hubo cambios ?
-                        }
-                        
-                    }
-                }
-
-            }
-
+            state->players[playerMove.playerIndex].isBlocked = 1;
         }
+        else
+        {
+            char diry = rowMov[playerMove.move];
+            char dirx = columnMov[playerMove.move];
+
+            masterEntrySync(sync);
+
+            // región crítica de escritura
+            validMove = processMove(state, playerMove.playerIndex, dirx, diry);
+            
+            masterExitSync(sync);
+
+            // TODO acá mismo agregar lo de levantar isBlocked si el jugador que jugó está bloqueado
+
+            moveProcessedPostSync(sync, playerMove.playerIndex);
+
+            // TOOO imprimir solo is hubo cambios ?
+        }
+
+
 
         if(time(NULL) - lastValidMoveTime > params.timeout)
         {
