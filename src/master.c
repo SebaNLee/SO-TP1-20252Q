@@ -65,8 +65,13 @@ int main(int argc, char const *argv[]) {
         if(isGameEnd || time(NULL) - lastValidMoveTime > params.timeout)
         {
             state->isGameOver = true;
-            
-            // derpierto a jugadores
+
+            // TODO hardcodeo, si termina juego entonces bloqueo a todos los jugadores
+            for (int i = 0; i < state->numPlayers; i++) {
+                state->players[i].isBlocked = true;
+            }
+
+            // TODO hardcodeo, derpierto a jugadores
             for (int i = 0; i < state->numPlayers; i++) {
                 moveProcessedPostSync(sync, i);
             }
