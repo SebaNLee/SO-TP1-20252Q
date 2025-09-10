@@ -3,6 +3,7 @@
 #include <sys/select.h>   
 #include "structs.h"
 #include <math.h>
+#include "sync.h"
 
 #define DIRECTION_OPTIONS 8
 int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
@@ -89,7 +90,7 @@ int main(int argc, char const *argv[]) {
         }
 
         // Seteo de timeout base
-        struct timeval timeInterval = {.tv_sec = abs(params.timeout - (time(NULL) - startTime)), .tv_usec = 0};
+        struct timeval timeInterval = {.tv_sec = abs(params.timeout - (time(NULL) - startTime)), .tv_usec = 0}; // TODO cálculo de milisegundos?
         
         // chequear si algún jugador mandó movimiento
         int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
@@ -108,40 +109,53 @@ int main(int argc, char const *argv[]) {
         {
             int start = (lastProcessedPlayer++) % state->numPlayers;
 
-            // TODO mutex y escribo
             // TODO check: inanición, timeout, isBlocked, mutex, G[]
             for (int offset = 0; offset < state->numPlayers; offset++) {
+                
                 int i = (start + offset) % state->numPlayers;
 
                 if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
+                    
                     unsigned char move;
                     int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+
                     printf("Procesando movimientos...\n");
+
                     // REVISAR USO
-                    if (n == 0) {
-                        state->players[i].isBlocked = 1;
-                    } else if (n < 0) {
+                    if (n < 0)
+                    {
                         perror("Failed to read");
-                    } else {
-                        char diry = rowMov[move];
-                        char dirx = columnMov[move];
+                        exit(1);
+                    }
+                    else
+                    {
+                        // TODO chequear EOF en consigna
+                        if(move == EOF)
+                        {
+                            state->players[i].isBlocked = 1;
+                        }
+                        else
+                        {
+                            char diry = rowMov[move];
+                            char dirx = columnMov[move];
 
-                        sem_wait(&sync->mutex_game_state_access);
+                            masterEntrySync(sync);
 
-                        processMove(state, i, dirx, diry);
-                        
-                        sem_post(&sync->mutex_game_state_access);
+                            // región crítica de escritura
+                            processMove(state, i, dirx, diry);
+                            
+                            masterExitSync(sync);
 
-                        sem_post(&sync->move_processed[i]);
+                            moveProcessedPostSync(sync, i);
+
+                            // TODO tiemout por movs invalids
+                            // TOOO imprimir solo is hubo cambios ?
+                        }
                         
                     }
                 }
 
             }
-
-
-            // TODO libero mutex
-
 
 
         }
