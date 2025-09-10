@@ -61,5 +61,8 @@ int main(int argc, char * argv[]) {
 
 unsigned char computeNextMove()
 {
-    return(0);
+    unsigned char moves[] = {0, 0, 2, 2, 4, 4, 6, 0, 1, 1, 1, 1, 1, 1};
+    static int i = 0;
+
+    return(moves[i++]);
 }

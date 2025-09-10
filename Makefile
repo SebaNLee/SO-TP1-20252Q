@@ -12,7 +12,7 @@ BIN_DIR = bin
 COMMON = $(wildcard $(SRC_DIR)/$(LIB_DIR)/*.c)
 
 # ejecutables
-TARGETS = $(BIN_DIR)/master $(BIN_DIR)/player $(BIN_DIR)/view $(BIN_DIR)/upper
+TARGETS = $(BIN_DIR)/master $(BIN_DIR)/player $(BIN_DIR)/view $(BIN_DIR)/upper $(BIN_DIR)/autoblock
 
 # crear carpeta bin si no existe
 $(BIN_DIR):
@@ -29,6 +29,9 @@ $(BIN_DIR)/view: $(SRC_DIR)/view.c $(COMMON) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(BIN_DIR)/upper: $(SRC_DIR)/upper.c $(COMMON) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)	
+
+$(BIN_DIR)/autoblock: $(SRC_DIR)/autoblock.c $(COMMON) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)	
 
 # reglas principales
