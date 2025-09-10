@@ -1,5 +1,9 @@
 #include "game.h"
 
+//TODO codigo copiado de master.c temporal
+#define DIRECT_OPTIONS 8
+int rowMove[DIRECT_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int columnMove[DIRECT_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1};
 
 //separa el tablero por regiones y le asigna el centro de cada region a un jugador
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers){
@@ -117,3 +121,21 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
 
     return toReturn;
 }
+
+//return 1 si esta blocked returns 0 si no
+int isPlayerBlocked(GameState * state, int playerIndex){
+    for(int i=0; i<8; i++){
+        int xValue=state->players[playerIndex].x + columnMove[i];
+        int yValue=state->players[playerIndex].y + rowMove[i];
+        if(xValue<state->width && yValue<state->height && xValue>=0 && yValue>=0){
+            if(state->board[state->width * yValue + xValue] > 0){
+                return 0;
+            }
+
+        }
+    }
+    return 1;
+
+
+}
+

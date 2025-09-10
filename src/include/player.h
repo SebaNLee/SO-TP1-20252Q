@@ -11,6 +11,6 @@
 #define PIPE_READ_END 0
 #define PIPE_WRITE_END 1
 
-unsigned char computeNextMove(GameState *localCopy, int playerID);  y, etc
+unsigned char computeNextMove(GameState *localCopy, int playerID); 
 
 #endif
