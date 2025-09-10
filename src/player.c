@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
     while(!state->isGameOver)
     {
         // TODO agregar mutex
-        sem_wait(&sync->send_move[playerID]);
+        sem_wait(&sync->move_processed[playerID]);
 
 
         unsigned char nextMove = computeNextMove();

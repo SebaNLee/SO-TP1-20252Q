@@ -51,7 +51,7 @@ int main(int argc, char const *argv[]) {
     // en clase se dijo que se debían inicializar en 1, todos pueden mover
     // TODO moverlo a init que está feo acá
     for (int i = 0 ; i < state->numPlayers; i++) { 
-        sem_post(&sync->send_move[i]); 
+        sem_post(&sync->move_processed[i]); 
     }
 
 
@@ -125,7 +125,7 @@ int main(int argc, char const *argv[]) {
                     } else {
                         processPlayerMove(state, sync, i, move);
 
-                        sem_post(&sync->send_move[i]);
+                        sem_post(&sync->move_processed[i]);
                         
                     }
                 }
@@ -170,11 +170,11 @@ void processPlayerMove( GameState * state, GameSync * sync, int i, unsigned char
     char diry = rowMov[move];
     char dirx = columnMov[move];
 
-    sem_wait(&sync->mutex_writer);
+    sem_wait(&sync->mutex_game_state_access);
 
     validateMove(state, i, dirx, diry);
     
-    sem_post(&sync->mutex_writer);
+    sem_post(&sync->mutex_game_state_access);
 
 }
 
@@ -320,25 +320,25 @@ void initGameSync(GameSync * sync)
         }
 
     // Lectores <-> Escritor
-    if (sem_init(&sync->mutex_readers, 1, 1) == ERROR) {
-         perror("sem_init   mutex_readers\n"); 
+    if (sem_init(&sync->mutex_master_access, 1, 1) == ERROR) {
+         perror("sem_init   mutex_master_access\n"); 
         exit(1); 
     } 
-    if (sem_init(&sync->mutex_writer, 1, 1) == ERROR) {
-         perror("sem_init mutex_writer\n");
+    if (sem_init(&sync->mutex_game_state_access, 1, 1) == ERROR) {
+         perror("sem_init mutex_game_state_access\n");
          exit(1); 
         }
-    if (sem_init(&sync->mutex_counter, 1, 1) == ERROR) {
-         perror("sem_init mutex_counter\n"); 
+    if (sem_init(&sync->readers_counter, 1, 1) == ERROR) {
+         perror("sem_init readers_counter\n"); 
          exit(1);
          }
 
     // Contador de lectores
-    sync->numReaders = 0;
+    sync->readers_counter = 0;
 
     // Turnos de jugadores
     for (int i = 0; i < 9; i++) {
-        if (sem_init(&sync->send_move[i], 1, 0) == ERROR) {
+        if (sem_init(&sync->move_processed[i], 1, 0) == ERROR) {
             perror("sem_init send_move[i]\n");
             exit(1);
         }
@@ -383,20 +383,20 @@ int freeSemaphores(GameSync * sync) {
     perror("sem_destroy view_writing_done\n");
     return ERROR;
    }
-    if( sem_destroy(&sync->mutex_readers)==ERROR){
-    perror("sem_destroy mutex_readers\n");
+    if( sem_destroy(&sync->mutex_master_access)==ERROR){
+    perror("sem_destroy mutex_master_access\n");
     return ERROR;
    }
-    if( sem_destroy(&sync->mutex_writer)==ERROR){
-    perror("sem_destroy mutex_writer\n");
+    if( sem_destroy(&sync->mutex_game_state_access)==ERROR){
+    perror("sem_destroy mutex_game_state_access\n");
     return ERROR;
    }
-   if( sem_destroy(&sync->mutex_counter)==ERROR){
-    perror("sem_destroy mutex_counter\n");
+   if( sem_destroy(&sync->mutex_readers_counter)==ERROR){
+    perror("sem_destroy mutex_readers_counter\n");
     return ERROR;
    }
    for (int i = 0; i < 9; i++) {
-        if (sem_destroy(&sync->send_move[i]) == ERROR) {
+        if (sem_destroy(&sync->move_processed[i]) == ERROR) {
             perror("sem_destroy send_move[i]\n");
             return ERROR;
         }
