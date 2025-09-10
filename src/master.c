@@ -7,10 +7,6 @@
 #include "game.h"
 #include "init.h"
 
-#define DIRECTION_OPTIONS 8
-int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1}; 
-
 
 
 int main(int argc, char const *argv[]) {
@@ -36,7 +32,7 @@ int main(int argc, char const *argv[]) {
 
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
-    initView(params);
+    int viewPID = initView(params);
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
 
 
@@ -69,27 +65,31 @@ int main(int argc, char const *argv[]) {
         bool isGameEnd = false;
         PlayerMove playerMove = waitPlayerMove(state, pipesfd, params.timeout, startTime, &isGameEnd);
 
-        if(isGameEnd)
+        if(isGameEnd || time(NULL) - lastValidMoveTime > params.timeout)
         {
-            
             state->isGameOver = true;
+            
+            // derpierto a jugadores
+            for (int i = 0; i < state->numPlayers; i++) {
+                moveProcessedPostSync(sync, i);
+            }
+            
             break;
         }
 
-        // TODO chequear EOF en consigna
+        // si manda EOF interpretamos que el player no quiere jugar más
         if(playerMove.move == EOF)
         {
             state->players[playerMove.playerIndex].isBlocked = 1;
+
+            moveProcessedPostSync(sync, playerMove.playerIndex);
         }
         else
         {
-            char diry = rowMov[playerMove.move];
-            char dirx = columnMov[playerMove.move];
-
             masterEntrySync(sync);
 
             // región crítica de escritura
-            validMove = processMove(state, playerMove.playerIndex, dirx, diry);
+            validMove = processMove(state, playerMove.playerIndex, playerMove.move);
 
             updateIfPlayerBlocked(state, playerMove.playerIndex);
             
@@ -98,32 +98,19 @@ int main(int argc, char const *argv[]) {
             // TODO acá mismo agregar lo de levantar isBlocked si el jugador que jugó está bloqueado
 
             moveProcessedPostSync(sync, playerMove.playerIndex);
-
-            // TOOO imprimir solo is hubo cambios ?
-        }
-
-
-
-        if(time(NULL) - lastValidMoveTime > params.timeout)
-        {
-            state->isGameOver = true;
         }
 
         if(validMove)
         {
             lastValidMoveTime = time(NULL);
         }
-        
-
     }
 
+    // último print de view
+    viewPrintSync(sync);
 
-    // TODO post/signal a view para el último print
-
-
-    // TODO wait para no dejar zombies 
-    // TODO guardar e imprimir valores de retorno de jugadores y view
-
+    // wait de procesos (para que no queden zombies)
+    waitViewAndPlayers(state, viewPID);
 
     // libero pipes
     freePipes(pipesfd, state->numPlayers);
@@ -138,16 +125,5 @@ int main(int argc, char const *argv[]) {
     
 
     return 0;
-}
-
-
-// TODO debug
-//solo de testeo
-void printParams(MasterParameters params) {
-    printf("width=%d\theight=%d\tdelay=%d\ttimeout=%d\tseed=%ld\tview=%s\tnumPlayers=%d\n", params.width, params.height, params.delay, params.timeout, params.seed, params.view, params.numPlayers);
-    for(int i=0; i<params.numPlayers; i++){
-        printf("player %d 's name=%s\n", i+1, params.players[i]);
-    }
-    
 }
 

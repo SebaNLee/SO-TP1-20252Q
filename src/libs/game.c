@@ -1,9 +1,8 @@
 #include "game.h"
 
-//TODO codigo copiado de master.c temporal
-#define DIRECT_OPTIONS 8
-int rowMove[DIRECT_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int columnMove[DIRECT_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1};
+int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
+int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1}; 
+
 
 //separa el tablero por regiones y le asigna el centro de cada region a un jugador
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers){
@@ -34,7 +33,10 @@ void setPlayerPosition(GameState * state, int width, int height, int numPlayers)
 
 
 // devuelve true si es jugada válida, false si no es inválida
-bool processMove(GameState * state, int i, char dirx, char diry) {
+bool processMove(GameState * state, int i, unsigned char move) {
+
+    char diry = rowMov[move];
+    char dirx = columnMov[move];
 
     int finalXpos = state->players[i].x + dirx;
     int finalYpos = state->players[i].y + diry;
@@ -126,8 +128,8 @@ void updateIfPlayerBlocked(GameState * state, int playerIndex){
     int xValue;
     int yValue;
     for(int i=0; i<8; i++){
-        xValue=state->players[playerIndex].x + columnMove[i];
-        yValue=state->players[playerIndex].y + rowMove[i];
+        xValue=state->players[playerIndex].x + columnMov[i];
+        yValue=state->players[playerIndex].y + rowMov[i];
         if(xValue<state->width && yValue<state->height && xValue>=0 && yValue>=0){
 
             // si tiene al menos un movimiento válido

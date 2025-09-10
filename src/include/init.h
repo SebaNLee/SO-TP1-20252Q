@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
-
+#include <sys/wait.h>
 
 
 #define ERROR -1
@@ -22,8 +22,9 @@ void initGameState(GameState * state, MasterParameters parameters);
 void initGameSync(GameSync * sync);
 int freeGameSync(GameSync * sync);
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2]);
-void initView(MasterParameters params);
+int initView(MasterParameters params);
 void initPipes(int pipesfd[][2], int numPlayers);
 void freePipes(int pipesfd[][2], int numPlayers);
+void waitViewAndPlayers(GameState * state, int viewPID);
 
 #endif
