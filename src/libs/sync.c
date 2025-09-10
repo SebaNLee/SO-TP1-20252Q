@@ -48,3 +48,19 @@ void moveProcessedWaitSync(GameSync * sync, int i)
 {
     sem_wait(&sync->move_processed[i]);
 }
+
+void viewPrintSync(GameSync * sync)
+{
+    sem_post(&sync->view_reading_pending);
+    sem_wait(&sync->view_writing_done);
+}
+
+void viewPostSync(GameSync * sync)
+{
+    sem_post(&sync->view_writing_done);
+}
+
+void viewWaitSync(GameSync * sync)
+{
+    sem_wait(&sync->view_reading_pending);
+}

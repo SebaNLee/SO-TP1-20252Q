@@ -1,4 +1,5 @@
 #include "view.h"
+#include "sync.h"
 
 #define RESET   "\033[0m"
 #define RED     "\033[41m"
@@ -232,7 +233,7 @@ int main(int argc, char * argv[]) {
     while(!state->isGameOver)
     {
         // esperar aviso de master.c
-        sem_wait(&sync->view_reading_pending);
+        viewWaitSync(sync);
 
         // TODO BORRAR, esto es para testear acceso a memoria compartida
         printf("Número de jugadores: %u\n", state->numPlayers);
@@ -279,7 +280,7 @@ int main(int argc, char * argv[]) {
             printf("%s%d°. %s%s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, colors[numPlayer], currPlayer->name, RESET, currPlayer->score, currPlayer->validMoves, currPlayer->invalidMoves);
         }
 
-        sem_post(&sync->view_writing_done);
+        viewPostSync(sync);
     } 
 
     // Final leaderboard. TODO, que lo haga el master esto de ordenar jugadores

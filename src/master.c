@@ -65,8 +65,7 @@ int main(int argc, char const *argv[]) {
         time_t startTime = time(NULL);
 
         // indico a view que imprima y espero a que termine
-        sem_post(&sync->view_reading_pending);
-        sem_wait(&sync->view_writing_done);
+        viewPrintSync(sync);
 
         // consigna, delay después de imprimir con view
         usleep(params.delay * 1000);
