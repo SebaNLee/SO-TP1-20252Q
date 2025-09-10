@@ -30,7 +30,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    while(!state->isGameOver)
+    while(!state->players[playerID].isBlocked)
     {
         moveProcessedWaitSync(sync, playerID);
 
