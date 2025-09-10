@@ -172,19 +172,7 @@ int main(int argc, char const *argv[]) {
 
 }
 
-void processPlayerMove( GameState * state, GameSync * sync, int i, unsigned char move ) {
-    char diry = rowMov[move];
-    char dirx = columnMov[move];
-
-    sem_wait(&sync->mutex_game_state_access);
-
-    validateMove(state, i, dirx, diry);
-    
-    sem_post(&sync->mutex_game_state_access);
-
-}
-
-void validateMove(GameState * state, int i, char dirx, char diry) {
+void processMove(GameState * state, int i, char dirx, char diry) {
 
     int finalXpos = state->players[i].x + dirx;
     int finalYpos = state->players[i].y + diry;
@@ -334,8 +322,8 @@ void initGameSync(GameSync * sync)
          perror("sem_init mutex_game_state_access\n");
          exit(1); 
         }
-    if (sem_init(&sync->readers_counter, 1, 1) == ERROR) {
-         perror("sem_init readers_counter\n"); 
+    if (sem_init(&sync->mutex_readers_counter, 1, 1) == ERROR) {
+         perror("sem_init mutex_readers_counter\n"); 
          exit(1);
          }
 
