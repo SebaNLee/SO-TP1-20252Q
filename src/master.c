@@ -431,7 +431,7 @@ void setPlayerPosition(GameState * state, int width, int height, int numPlayers)
             state->players[idx].y = y;
 
             // marcar celda como tomada por este jugador
-            state->board[y * width + x] = -(idx+1); 
+            state->board[y * width + x] = -(idx); 
 
             idx++;
         }
