@@ -20,6 +20,6 @@ typedef struct {
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers);
 bool processMove(GameState * state, int i, char dirx, char diry);
 PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime, bool * isGameEnd);
-int isPlayerBlocked(GameState * state, int playerIndex);
+void updateIfPlayerBlocked(GameState * state, int playerIndex);
 
 #endif

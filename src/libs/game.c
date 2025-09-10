@@ -122,22 +122,25 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     return toReturn;
 }
 
-//return 1 si esta blocked returns 0 si no
-int isPlayerBlocked(GameState * state, int playerIndex){
+void updateIfPlayerBlocked(GameState * state, int playerIndex){
     int xValue;
     int yValue;
     for(int i=0; i<8; i++){
         xValue=state->players[playerIndex].x + columnMove[i];
         yValue=state->players[playerIndex].y + rowMove[i];
         if(xValue<state->width && yValue<state->height && xValue>=0 && yValue>=0){
+
+            // si tiene al menos un movimiento válido
             if(state->board[state->width * yValue + xValue] > 0){
-                return 0;
+                return;
             }
 
         }
     }
-    return 1;
 
+    // si no tiene movimientos diponible, bloquear al jugador
+    state->players[playerIndex].isBlocked = true;
 
+    return;
 }
 

@@ -90,6 +90,8 @@ int main(int argc, char const *argv[]) {
 
             // región crítica de escritura
             validMove = processMove(state, playerMove.playerIndex, dirx, diry);
+
+            updateIfPlayerBlocked(state, playerMove.playerIndex);
             
             masterExitSync(sync);
 
