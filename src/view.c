@@ -100,8 +100,6 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
     int * board = state->board;
     Player * players = state->players;
     int numPlayersProcessed = (height==10) ? 0 : numPlayers+1;
-    
-    int ScreenWidth = 2 * width/3 + 4* width + 1;  
 
     printTitle(width);
     int topPadding = (height - state->numPlayers) / 2;
@@ -236,15 +234,7 @@ int main(int argc, char * argv[]) {
         // esperar aviso de master.c
         viewWaitSync(sync);
 
-        // TODO BORRAR, esto es para testear acceso a memoria compartida
-        printf("Número de jugadores: %u\n", state->numPlayers);
-        printf("Juego terminado: %d\n", state->isGameOver);
-        printf("width:%u x height%u\n", width, height);
-
-        // este me sirve de debug de player.c
-        printf("###  validMoves P1: %d    ###\n", state->players[0].validMoves);
-        printf("###  invalidMoves P1: %d  ###\n", state->players[0].invalidMoves);
-        
+        printf("\033[H\033[J");     // Limpiar la terminal
         printf("\n");
 
         Player * leaderboard[state->numPlayers];
@@ -259,31 +249,12 @@ int main(int argc, char * argv[]) {
 
 
 
-        // Print leaderboard
-        for (int i = 1; i <= state->numPlayers; i++) {
-            // int numPlayer = leaderboard[i-1];
-            // Player player = state->players[numPlayer];
-
-            Player * currPlayer = leaderboard[i - 1];
-
-
-            // TODO esto es ineficiente, porque se podría guardar en leaderboard tipo un struct {Player, numPlayer}
-            int numPlayer;
-            for(int j = 0; j < state->numPlayers; j++)
-            {
-                if(currPlayer->pid == state->players[j].pid)
-                {
-                    numPlayer = j;
-                }
-            }
-
-
-            printf("%s%d°. %s%s%s %d %d %d\n", (8+i <= 11) ? colors[8+i] : RESET, i, colors[numPlayer], currPlayer->name, RESET, currPlayer->score, currPlayer->validMoves, currPlayer->invalidMoves);
-        }
+        
 
         viewPostSync(sync);
     } 
 
+    newLine();newLine();
     // Final leaderboard. TODO, que lo haga el master esto de ordenar jugadores
     Player * leaderboard[state->numPlayers];
     // Se llena el leaderboard con ids de jugadores
