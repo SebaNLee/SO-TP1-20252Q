@@ -56,13 +56,18 @@ int main(int argc, char const *argv[]) {
     }
 
 
+    // es por si otro procesos como view del master consumen demasiado tiempo
+    // observar que al hacer strace, ChomChamps hace a veces 10s o 9s con -t 10
+    time_t startTime;
     
+    // para terminar el juego si no hubo movimientos válidos en timeout tiempo
+    time_t lastValidMoveTime = time(NULL);
+    bool validMove;
 
     while(!state->isGameOver)
     {
-        // es por si otro procesos como view consumen demasiado tiempo
-        // observar que al hacer strace, ChomChamps hace a veces 10s o 9s con -t 10
-        time_t startTime = time(NULL);
+        startTime = time(NULL);
+        validMove = false;
 
         // indico a view que imprima y espero a que termine
         viewPrintSync(sync);
@@ -90,7 +95,7 @@ int main(int argc, char const *argv[]) {
 
         // Seteo de timeout base
         struct timeval timeInterval = {.tv_sec = abs(params.timeout - (time(NULL) - startTime)), .tv_usec = 0}; // TODO cálculo de milisegundos?
-        
+
         // chequear si algún jugador mandó movimiento
         int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
         if (activity < 0)
@@ -141,11 +146,15 @@ int main(int argc, char const *argv[]) {
                             masterEntrySync(sync);
 
                             // región crítica de escritura
-                            processMove(state, i, dirx, diry);
+                            validMove = processMove(state, i, dirx, diry);
                             
                             masterExitSync(sync);
 
+                            // TODO acá mismo agregar lo de levantar isBlocked si el jugador que jugó está bloqueado
+
                             moveProcessedPostSync(sync, i);
+
+                            break;
 
                             // TODO tiemout por movs invalids
                             // TOOO imprimir solo is hubo cambios ?
@@ -156,8 +165,18 @@ int main(int argc, char const *argv[]) {
 
             }
 
-
         }
+
+        if(time(NULL) - lastValidMoveTime > params.timeout)
+        {
+            state->isGameOver = true;
+        }
+
+        if(validMove)
+        {
+            lastValidMoveTime = time(NULL);
+        }
+        
 
     }
 
@@ -185,18 +204,23 @@ int main(int argc, char const *argv[]) {
 
 }
 
-void processMove(GameState * state, int i, char dirx, char diry) {
+
+// devuelve true si es jugada válida, false si no es inválida
+bool processMove(GameState * state, int i, char dirx, char diry) {
 
     int finalXpos = state->players[i].x + dirx;
     int finalYpos = state->players[i].y + diry;
     if ( finalXpos < 0 || finalXpos >= state->width || finalYpos < 0 || finalYpos >= state->height || state->board[finalXpos + state->width * finalYpos] <= 0) {
         state->players[i].invalidMoves++;
+        return false;
     } else {
         state->players[i].score += state->board[finalXpos + state->width * finalYpos];
         state->players[i].validMoves++;
         state->board[finalXpos + state->width * finalYpos] = -i;
         state->players[i].x = finalXpos;
         state->players[i].y = finalYpos;
+
+        return true;
     }
 
 }

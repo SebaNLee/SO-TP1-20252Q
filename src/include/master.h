@@ -26,7 +26,7 @@ void freePipes(int pipesfd[][2], int numPlayers);
 void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2]);
 void initView(MasterParameters params);
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers);
-void processMove(GameState * state, int i, char dirx, char diry);
+bool processMove(GameState * state, int i, char dirx, char diry);
 
 
 
