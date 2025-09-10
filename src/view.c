@@ -2,29 +2,31 @@
 #include "sync.h"
 
 #define RESET   "\033[0m"
-#define RED     "\033[41m"
-#define GREEN   "\033[42m"
-#define YELLOW  "\033[43m"
-#define BLUE    "\033[44m"
-#define MAGENTA "\033[45m"
+#define SIGN_BG "\033[48;2;150;75;50m"
+#define SIGN "\033[48;2;184;122;92m"
+#define GRASS "\033[48;2;28;134;58m"
+#define WATER "\033[48;2;58;131;218m"
 
-#define WHITE   "\033[47m"
-#define BRIGHT_BLUE     "\033[104m"
-#define BRIGHT_MAGENTA   "\033[105m"
-#define ORANGE  "\033[48;2;255;165;0m"
-#define BLACK   "\033[48;2;0;0;0m"
+#define RED "\033[48;2;199;44;38m"
 #define CYAN    "\033[48;2;0;255;255m"
+#define GREEN "\033[48;2;0;204;122m"
+#define YELLOW "\033[48;2;229;214;47m"
+#define PINK "\033[48;2;207;99;188m"
+#define ORANGE "\033[48;2;255;165;0m"
+#define WHITE "\033[48;2;212;212;212m"
+#define BLACK   "\033[48;2;0;0;0m"
+#define PURPLE "\033[48;2;146;36;142m"
+
+
 #define GOLD_BG   "\033[48;2;212;175;55m"   
 #define SILVER_BG "\033[48;2;192;192;192m"  
 #define BRONZE_BG "\033[48;2;205;127;50m"  
-#define BROWN_BG   "\033[48;2;184;122;92m"
-#define DARK_BROWN "\033[48;2;150;75;50m"
-#define GRASS       "\033[48;2;28;134;58m"
+
 #define TAB_NUMBER  8
 #define TIMES_TAB(width) (width/3) 
 
 
-const char* colors[] = {RED, CYAN, GREEN, YELLOW, MAGENTA, ORANGE, WHITE, BRIGHT_MAGENTA, BLACK, GOLD_BG, SILVER_BG, BRONZE_BG};
+const char* colors[] = {RED, CYAN, GREEN, YELLOW, PINK, ORANGE, WHITE, PURPLE, BLACK, GOLD_BG, SILVER_BG, BRONZE_BG};
 
 void fillSpacesWithColor(int spaces, const char * color) {
     for (int i = 0; i < spaces; i++) {
@@ -42,23 +44,23 @@ void printLineColor(int width, const char * color) {
 }
 
 void printTitle(int width) {
-    printLineColor(width, DARK_BROWN); newLine();
+    printLineColor(width, SIGN_BG); newLine();
     int centerWidth = 2 * 8 * (int)TIMES_TAB(width) - 4 + 4*width + 1;
-    printf("%s  ", DARK_BROWN); fillSpacesWithColor(centerWidth, BROWN_BG); printf("%s  ", DARK_BROWN); newLine();
+    printf("%s  ", SIGN_BG); fillSpacesWithColor(centerWidth, SIGN); printf("%s  ", SIGN_BG); newLine();
 
     char * title = "🏆 QUACKCHAMPS🏆";
     int visualLength = strlen(title) - 2*4 + 2*2; 
     int leftSpaces  = (centerWidth - visualLength) / 2;
     int rightSpaces = centerWidth - visualLength - leftSpaces;
 
-    printf("%s  ", DARK_BROWN);
-    fillSpacesWithColor(leftSpaces, BROWN_BG);
+    printf("%s  ", SIGN_BG);
+    fillSpacesWithColor(leftSpaces, SIGN);
     printf("%s", title);
-    fillSpacesWithColor(rightSpaces, BROWN_BG);
-    printf("%s  ", DARK_BROWN); newLine();
+    fillSpacesWithColor(rightSpaces, SIGN);
+    printf("%s  ", SIGN_BG); newLine();
 
-    printf("%s  ", DARK_BROWN); fillSpacesWithColor(centerWidth, BROWN_BG); printf("%s  ", DARK_BROWN); newLine();
-    printLineColor(width, DARK_BROWN); 
+    printf("%s  ", SIGN_BG); fillSpacesWithColor(centerWidth, SIGN); printf("%s  ", SIGN_BG); newLine();
+    printLineColor(width, SIGN_BG); 
     
 }
 
@@ -76,7 +78,7 @@ void printHeader(int columns, int rows) {
         int counter = 1;
         printf("%s\n", GRASS);
         tabulate(columns, GRASS);
-        printf("%s╔", BRIGHT_BLUE);
+        printf("%s╔", WATER);
         while (counter++ < columns) {
             printf("═══╦");
         }
@@ -84,7 +86,7 @@ void printHeader(int columns, int rows) {
         tabulate(columns, GRASS);
         if (rows == 10) {
             fillSpacesWithColor(TAB_NUMBER, RESET);
-            printf("%s     LEADERBOARD    |  PT | VM | IM |", BROWN_BG);
+            printf("%s     LEADERBOARD    |  PT | VM | IM |", SIGN);
         }
         newLine();
 
@@ -108,7 +110,7 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
 
     for (int i = 0; i < height; i++) {
         tabulate(width, GRASS);
-        printf("%s", BRIGHT_BLUE);
+        printf("%s", WATER);
         for (int j = 0; j < width; j++) {
             
             int val = board[i * width + j];
@@ -120,9 +122,9 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
 
             if(val <= 0) {
                 if (isHead) {
-                    printf("║%s🦆 %s", colors[abs(val)], BRIGHT_BLUE);
+                    printf("║%s🦆 %s", colors[abs(val)], WATER);
                 } else {
-                    printf("║%s   %s", colors[abs(val)], BRIGHT_BLUE); 
+                    printf("║%s   %s", colors[abs(val)], WATER); 
                 }
             } else {
                 printf("║ %d ", val);
@@ -138,7 +140,7 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
         if (numPlayersProcessed < numPlayers) {
             if (numPlayersProcessed < 0) {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
-                printf("%s     LEADERBOARD    |  PT | VM | IM |", BROWN_BG);
+                printf("%s     LEADERBOARD    |  PT | VM | IM |", SIGN);
             } else {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
                 int numPlayer;
@@ -149,13 +151,13 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
                         numPlayer = j;
                     }
                 }
-                printf("%s|%s  %d°. %s|%s %s", BROWN_BG, (9+numPlayersProcessed <= 11) ? colors[9+numPlayersProcessed] : RESET, numPlayersProcessed+1, BROWN_BG,
+                printf("%s|%s  %d°. %s|%s %s", SIGN, (9+numPlayersProcessed <= 11) ? colors[9+numPlayersProcessed] : RESET, numPlayersProcessed+1, SIGN,
                 colors[numPlayer], leaderboard[numPlayersProcessed]->name);
                 fillSpacesWithColor(11 - strlen(leaderboard[numPlayersProcessed]->name), colors[numPlayer]);
                 printf("| %d%s |", leaderboard[numPlayersProcessed]->score, (leaderboard[numPlayersProcessed]->score < 100) ? 
                                    ((leaderboard[numPlayersProcessed]->score < 10) ?  "  " : " ") : "");
                 printf(" %d%s |", leaderboard[numPlayersProcessed]->validMoves, (leaderboard[numPlayersProcessed]->validMoves < 10) ? " " : "" );
-                printf(" %d%s %s|", leaderboard[numPlayersProcessed]->invalidMoves, (leaderboard[numPlayersProcessed]->invalidMoves < 10) ? " " : "", BROWN_BG);
+                printf(" %d%s %s|", leaderboard[numPlayersProcessed]->invalidMoves, (leaderboard[numPlayersProcessed]->invalidMoves < 10) ? " " : "", SIGN);
             }
             
         }
@@ -165,7 +167,7 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
         if (i+1 < state->height) {
             printf("%s", GRASS);
             tabulate(width, GRASS);
-            printf("%s╠═══", BRIGHT_BLUE);
+            printf("%s╠═══", WATER);
             for (int j = 1; j < width; j++) {
                 printf("╬═══");
             }
@@ -173,7 +175,7 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
             tabulate(width, GRASS);
             if (numPlayersProcessed++ < numPlayers) {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
-                printf("%s-------------------------------------", BROWN_BG);    
+                printf("%s-------------------------------------", SIGN);    
             }
             newLine();
         } 
@@ -186,7 +188,7 @@ void printBase(int columns) {
     int counter = 1;
         printf("%s", GRASS);
         tabulate(columns, GRASS);
-        printf("%s╚", BRIGHT_BLUE);
+        printf("%s╚", WATER);
         while (counter++ < columns) {
             printf("═══╩");
         }
