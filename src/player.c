@@ -1,5 +1,6 @@
 #include "player.h"
 #include "structs.h"
+#include "sync.h"
 
 
 int main(int argc, char * argv[]) {
@@ -31,15 +32,19 @@ int main(int argc, char * argv[]) {
 
     while(!state->isGameOver)
     {
-        sem_wait(&sync->send_move[playerID]);
+        moveProcessedWaitSync(sync, playerID);
 
+        playerEntrySync(sync);
+
+        // región crítica de lectura
+
+        // TODO extraer datos o copiar GameState
+
+        playerExitSync(sync);
 
         unsigned char nextMove = computeNextMove();
 
         write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)); 
-
-
-        
     }
 
 

@@ -44,11 +44,11 @@ typedef struct {
      */
     sem_t view_writing_done; 
 
-    sem_t mutex_readers; //protege el acceso al contador F (para sumar/restar lectores) 
-    sem_t mutex_writer; //se bloquea cuando alguien escribe (el máster)
-    sem_t mutex_counter; //se usa para evitar que lectores entren mientras el escritor espera
-    unsigned int numReaders;//contador de cuántos jugadores están leyendo.
-    sem_t send_move[9]; // Le indican a cada jugador que puede enviar 1 movimiento
+    sem_t mutex_master_access; // indica que el master quiere acceder exclusivamente a GameState
+    sem_t mutex_game_state_access; // acceso exclusivo para GameState
+    sem_t mutex_readers_counter; // mutex para readers_counter
+    unsigned int readers_counter; // contador de cuántos jugadores están leyendo
+    sem_t move_processed[9]; // indica al i-ésimo jugador que su jugada fue procesada
 } GameSync;
 
 /*

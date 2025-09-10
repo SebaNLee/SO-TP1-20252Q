@@ -3,6 +3,7 @@
 #include <sys/select.h>   
 #include "structs.h"
 #include <math.h>
+#include "sync.h"
 
 #define DIRECTION_OPTIONS 8
 int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
@@ -35,109 +36,137 @@ int main(int argc, char const *argv[]) {
     int pipesfd[state->numPlayers][2];
     initPipes(pipesfd, state->numPlayers);
 
-    // la idea es que quiero reemplazar los fd de STDOUT y STDIN de los players por lso fd del pide del master 
-    // fork por cada jugador
-    // dup2 para reemplazar STDOUT de cada jugador
-
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
     initView(params);
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
     
-    
+
+
+    // inicializaciones para el ciclo principal
     int lastProcessedPlayer = 0;
 
     // ETC
 
-    // Cálculo de maxfd
-    int maxfd = 0;
-    for (int i = 0; i < state->numPlayers; i++) {
-        if (pipesfd[i][PIPE_READ_END] > maxfd)
-            maxfd = pipesfd[i][PIPE_READ_END];
+
+    // en clase se dijo que se debían inicializar en 1, todos pueden mover
+    // TODO moverlo a init que está feo acá
+    for (int i = 0 ; i < state->numPlayers; i++) { 
+        sem_post(&sync->move_processed[i]); 
     }
 
-    // Seteo de timeout base
-    struct timeval timeIntervalBase;
-        timeIntervalBase.tv_sec = params.timeout;
-        timeIntervalBase.tv_usec = 0;     
 
     
 
     while(!state->isGameOver)
     {
-        
-        // TODO chequeo de tiempo (si levanto isGameOver o no)
-        // TODO delay
+        // es por si otro procesos como view consumen demasiado tiempo
+        // observar que al hacer strace, ChomChamps hace a veces 10s o 9s con -t 10
+        time_t startTime = time(NULL);
 
+        // indico a view que imprima y espero a que termine
         sem_post(&sync->view_reading_pending);
         sem_wait(&sync->view_writing_done);
 
-        
-        for (int i = 0 ; i < state->numPlayers; i++) { 
-            sem_post(&sync->send_move[i]); 
-        }
-        
+        // consigna, delay después de imprimir con view
+        usleep(params.delay * 1000);
+
 
         // Crear el set de pipes que se leen en select
         fd_set fds;
         FD_ZERO(&fds);
+
+        // Cálculo de maxfd
+        int maxfd = 0;
+        for (int i = 0; i < state->numPlayers; i++) {
+            if (pipesfd[i][PIPE_READ_END] > maxfd)
+                maxfd = pipesfd[i][PIPE_READ_END];
+        }
+
+        // meto al set los pipes de los jugadores activos
         for (int i = 0; i < state->numPlayers; i++) {
             if (!state->players[i].isBlocked)
                 FD_SET(pipesfd[i][PIPE_READ_END], &fds);
         }
 
-        // Reseteo el timeout
-        struct timeval timeInterval = timeIntervalBase;
+        // Seteo de timeout base
+        struct timeval timeInterval = {.tv_sec = abs(params.timeout - (time(NULL) - startTime)), .tv_usec = 0}; // TODO cálculo de milisegundos?
         
-
-        // Esperar movimiento de algún jugador
+        // chequear si algún jugador mandó movimiento
         int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
-        /*
-           Qué pasa con select? 
-           Supongamos que tenemos 3 jugadores con fd [4, 5, 6]. Si solo el fd 5 tiene datos, despues del select el fds queda únicamente con el 5. Los otros desaparecen.
-            Con el intervalo de tiempo pasa lo mismo, lo modifica. 
-        */
-        if (activity < 0) {
+        if (activity < 0)
+        {
             perror("Failed in function select");
-            break;
+            exit(1);
         }
+        // no hubo writes de jugadores en tiempo timeout (entonces salgo)
+        else if(activity == 0)
+        {
+            state->isGameOver = true;
+        }
+        // si hubo devoluciones, agarro con round robin al primer fd con datos
+        else if(activity > 0)
+        {
+            int start = (lastProcessedPlayer++) % state->numPlayers;
 
-        int start = (lastProcessedPlayer++) % state->numPlayers;
+            // TODO check: inanición, timeout, isBlocked, mutex, G[]
+            for (int offset = 0; offset < state->numPlayers; offset++) {
+                
+                int i = (start + offset) % state->numPlayers;
 
-        printf("Llegamos hasta aca!\n");
-
-        for (int offset = 0; offset < state->numPlayers; offset++) {
-            int i = (start + offset) % state->numPlayers;
-
-            if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
-                unsigned char move;
-                int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
-                printf("Procesando movimientos...\n");
-                // REVISAR USO
-                if (n == 0) {
-                    state->players[i].isBlocked = 1;
-                } else if (n < 0) {
-                    perror("Failed to read");
-                } else {
-                    processPlayerMove(state, sync, i, move);
-
-                    sem_post(&sync->send_move[i]);
+                if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
                     
+                    unsigned char move;
+                    int n = read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+
+                    printf("Procesando movimientos...\n");
+
+                    // REVISAR USO
+                    if (n < 0)
+                    {
+                        perror("Failed to read");
+                        exit(1);
+                    }
+                    else
+                    {
+                        // TODO chequear EOF en consigna
+                        if(move == EOF)
+                        {
+                            state->players[i].isBlocked = 1;
+                        }
+                        else
+                        {
+                            char diry = rowMov[move];
+                            char dirx = columnMov[move];
+
+                            masterEntrySync(sync);
+
+                            // región crítica de escritura
+                            processMove(state, i, dirx, diry);
+                            
+                            masterExitSync(sync);
+
+                            moveProcessedPostSync(sync, i);
+
+                            // TODO tiemout por movs invalids
+                            // TOOO imprimir solo is hubo cambios ?
+                        }
+                        
+                    }
                 }
+
             }
 
+
         }
-
-        
-
-        
-
 
     }
 
 
-    // ETC
+    // TODO post/signal a view para el último print
 
+
+    // TODO wait para no dejar zombies 
 
 
 
@@ -157,20 +186,7 @@ int main(int argc, char const *argv[]) {
 
 }
 
-
-void processPlayerMove( GameState * state, GameSync * sync, int i, unsigned char move ) {
-    char diry = rowMov[move];
-    char dirx = columnMov[move];
-
-    sem_wait(&sync->mutex_writer);
-
-    validateMove(state, i, dirx, diry);
-    
-    sem_post(&sync->mutex_writer);
-
-}
-
-void validateMove(GameState * state, int i, char dirx, char diry) {
+void processMove(GameState * state, int i, char dirx, char diry) {
 
     int finalXpos = state->players[i].x + dirx;
     int finalYpos = state->players[i].y + diry;
@@ -312,25 +328,25 @@ void initGameSync(GameSync * sync)
         }
 
     // Lectores <-> Escritor
-    if (sem_init(&sync->mutex_readers, 1, 1) == ERROR) {
-         perror("sem_init   mutex_readers\n"); 
+    if (sem_init(&sync->mutex_master_access, 1, 1) == ERROR) {
+         perror("sem_init   mutex_master_access\n"); 
         exit(1); 
     } 
-    if (sem_init(&sync->mutex_writer, 1, 1) == ERROR) {
-         perror("sem_init mutex_writer\n");
+    if (sem_init(&sync->mutex_game_state_access, 1, 1) == ERROR) {
+         perror("sem_init mutex_game_state_access\n");
          exit(1); 
         }
-    if (sem_init(&sync->mutex_counter, 1, 1) == ERROR) {
-         perror("sem_init mutex_counter\n"); 
+    if (sem_init(&sync->mutex_readers_counter, 1, 1) == ERROR) {
+         perror("sem_init mutex_readers_counter\n"); 
          exit(1);
          }
 
     // Contador de lectores
-    sync->numReaders = 0;
+    sync->readers_counter = 0;
 
     // Turnos de jugadores
     for (int i = 0; i < 9; i++) {
-        if (sem_init(&sync->send_move[i], 1, 0) == ERROR) {
+        if (sem_init(&sync->move_processed[i], 1, 0) == ERROR) {
             perror("sem_init send_move[i]\n");
             exit(1);
         }
@@ -375,20 +391,20 @@ int freeSemaphores(GameSync * sync) {
     perror("sem_destroy view_writing_done\n");
     return ERROR;
    }
-    if( sem_destroy(&sync->mutex_readers)==ERROR){
-    perror("sem_destroy mutex_readers\n");
+    if( sem_destroy(&sync->mutex_master_access)==ERROR){
+    perror("sem_destroy mutex_master_access\n");
     return ERROR;
    }
-    if( sem_destroy(&sync->mutex_writer)==ERROR){
-    perror("sem_destroy mutex_writer\n");
+    if( sem_destroy(&sync->mutex_game_state_access)==ERROR){
+    perror("sem_destroy mutex_game_state_access\n");
     return ERROR;
    }
-   if( sem_destroy(&sync->mutex_counter)==ERROR){
-    perror("sem_destroy mutex_counter\n");
+   if( sem_destroy(&sync->mutex_readers_counter)==ERROR){
+    perror("sem_destroy mutex_readers_counter\n");
     return ERROR;
    }
    for (int i = 0; i < 9; i++) {
-        if (sem_destroy(&sync->send_move[i]) == ERROR) {
+        if (sem_destroy(&sync->move_processed[i]) == ERROR) {
             perror("sem_destroy send_move[i]\n");
             return ERROR;
         }
