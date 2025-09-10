@@ -6,7 +6,6 @@
 #include "sync.h"
 #include "game.h"
 #include "init.h"
-#include "pipes.h"
 
 #define DIRECTION_OPTIONS 8
 int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
