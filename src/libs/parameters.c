@@ -32,36 +32,42 @@ MasterParameters setParams(int argc, char* const  argv[]){
     while ((op = getopt(argc, argv, "p:w:h:d:t:s:v:")) != -1) {
         switch (op) {
             case 'w':
-                if (atoi(optarg) < 10) { 
+                   if (atoi(optarg) < 10) { 
                     fprintf(stderr,"Error: Width selected must be of at least 10\n");
                     exit(1);
                 }
                 params.width = atoi(optarg);
                 break;
             case 'h':
-                if (atoi(optarg) < 10) {
-                   fprintf(stderr,"Error: Height selected must be of at least 10\n");
+                   if (atoi(optarg) < 10) { 
+                    fprintf(stderr,"Error: Height selected must be of at least 10\n");
                     exit(1);
                 }
-                params.height= atoi(optarg);
+                params.width = atoi(optarg);
                 break;
             case 'd':
-                if (atoi(optarg) > 0) {
-                    params.delay = atoi(optarg);
+                if (atoi(optarg) <= 0) {
+                  fprintf(stderr,"Error: Delay selected must be a positive number\n");
+                  exit(1);
                 }
+                params.delay = atoi(optarg);
                 break;
             case 's':
-                if (atoi(optarg) > 0) {
-                    params.seed = atoi(optarg);
+                if (atoi(optarg) <= 0) {
+                     fprintf(stderr,"Error: Seed selected must be a positive number\n");
+                  exit(1);
                 }
+                params.seed = atoi(optarg);
                 break;
             case 'v':
                 params.view = optarg;
                 break;
             case 't':
-                if (atoi(optarg) > 0) {
-                    params.timeout = atoi(optarg);
+                if (atoi(optarg) <= 0) {
+                    fprintf(stderr,"Error: Timeout selected must be a positive number\n");
+                  exit(1);
                 }
+                params.timeout = atoi(optarg);
                 break;
             case 'p': {
                 int idx = optind - 1;
