@@ -83,16 +83,17 @@ int main(int argc, char const *argv[]) {
         }
         else
         {
+            // entro a región crítica de escritura
             masterEntrySync(sync);
 
-            // región crítica de escritura
+            
             validMove = processMove(state, playerMove.playerIndex, playerMove.move);
 
             updateIfPlayerBlocked(state, playerMove.playerIndex);
             
             masterExitSync(sync);
+            // salgo de región crítica de escritura
 
-            // TODO acá mismo agregar lo de levantar isBlocked si el jugador que jugó está bloqueado
 
             moveProcessedPostSync(sync, playerMove.playerIndex);
         }
