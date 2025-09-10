@@ -77,7 +77,7 @@ int main(int argc, char const *argv[]) {
             break;
         }
 
-        // TODO chequear EOF en consigna
+        // si manda EOF interpretamos que el player no quiere jugar más
         if(playerMove.move == EOF)
         {
             state->players[playerMove.playerIndex].isBlocked = 1;
@@ -96,8 +96,6 @@ int main(int argc, char const *argv[]) {
             // TODO acá mismo agregar lo de levantar isBlocked si el jugador que jugó está bloqueado
 
             moveProcessedPostSync(sync, playerMove.playerIndex);
-
-            // TOOO imprimir solo is hubo cambios ?
         }
 
         if(validMove)
@@ -125,16 +123,5 @@ int main(int argc, char const *argv[]) {
     
 
     return 0;
-}
-
-
-// TODO debug
-//solo de testeo
-void printParams(MasterParameters params) {
-    printf("width=%d\theight=%d\tdelay=%d\ttimeout=%d\tseed=%ld\tview=%s\tnumPlayers=%d\n", params.width, params.height, params.delay, params.timeout, params.seed, params.view, params.numPlayers);
-    for(int i=0; i<params.numPlayers; i++){
-        printf("player %d 's name=%s\n", i+1, params.players[i]);
-    }
-    
 }
 

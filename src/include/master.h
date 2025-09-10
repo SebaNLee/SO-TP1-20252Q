@@ -15,8 +15,6 @@
 #define ERROR -1
 #define SUCCESS 0
 
-void printParams(MasterParameters params); // TODO debug
-
 
 
 
