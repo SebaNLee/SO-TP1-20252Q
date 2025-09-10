@@ -12,7 +12,7 @@ typedef struct {
     int delay;
     int timeout;
     long seed;
-    char * view; //que tipo de dato es vista?
+    char * view;
     int numPlayers;
     char * players[MAXPLAYERS];
 
