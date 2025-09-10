@@ -24,12 +24,8 @@ int main(int argc, char const *argv[]) {
     // TODO debug
     printParams(params);
 
-    size_t boardSize = params.width * params.height * sizeof(int);
-    size_t stateSize = sizeof(GameState) + boardSize;
-    size_t syncSize = sizeof(GameSync);
-
-    GameState * state = (GameState*) createSHM(GAME_STATE_SHM, stateSize, true, true);
-    GameSync * sync = (GameSync *) createSHM(GAME_SYNC_SHM, syncSize, true, true);
+    GameState * state = (GameState*) createSHM(GAME_STATE_SHM, sizeof(GameState) + params.width * params.height * sizeof(int), true, true);
+    GameSync * sync = (GameSync *) createSHM(GAME_SYNC_SHM, sizeof(GameSync), true, true);
 
     initGameState(state, params);
     initGameSync(sync);
@@ -186,8 +182,8 @@ int main(int argc, char const *argv[]) {
 
     freeGameSync(sync);
     
-    closeSHM(state, stateSize);
-    closeSHM(sync, syncSize);
+    closeSHM(state, sizeof(GameState) + params.width * params.height * sizeof(int));
+    closeSHM(sync, sizeof(GameSync));
     unlinkSHM(GAME_STATE_SHM);
     unlinkSHM(GAME_SYNC_SHM);
 
