@@ -43,7 +43,7 @@ MasterParameters setParams(int argc, char* const  argv[]){
                     fprintf(stderr,"Error: Height selected must be of at least 10\n");
                     exit(1);
                 }
-                params.width = atoi(optarg);
+                params.height = atoi(optarg);
                 break;
             case 'd':
                 if (atoi(optarg) <= 0) {
