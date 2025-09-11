@@ -19,6 +19,8 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
 
 void printBase(int columns);
 
+bool isDraw(Player * p1, Player * p2);
+
 
 
 #endif
