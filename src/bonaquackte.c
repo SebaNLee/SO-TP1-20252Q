@@ -77,7 +77,7 @@ bool lastMove(int x, int y, GameState * state) {
     return ans;
 }
 
-unsigned char planNextMove(int currentX, int currentY, GameState * state)  {
+unsigned char planNextMove(int currentX, int currentY, GameState * state, int distance, bool askDir)  {
     int currentMax = 0;
     int worstCase = 0;
     unsigned char directions[][3] = { {7, 0, 1}, 
@@ -87,22 +87,31 @@ unsigned char planNextMove(int currentX, int currentY, GameState * state)  {
     unsigned char worstDir;                                  
     for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
+            int farPoints = 0;
             if (!isOutOfBoundaries(currentX+j, currentY+i, state->height, state->width) && state->board[(currentY+i) * state->width + (currentX + j)] > 0) {
-                if (lastMove(currentX+i, currentY+j, state)) {
+                if (lastMove(currentX+j, currentY+i, state)) {
                     if ( worstCase < state->board[(currentY+i) * state->width + (currentX + j)] ) {
                         worstCase = state->board[(currentY+i) * state->width + (currentX + j)];
-                        worstDir = directions[i+1][j+1];
+                        worstDir = directions[i+1][j+1];          
                     }
                 } else {
-                    if (currentMax < state->board[(currentY+i) * state->width + currentX + j]) {
-                        currentMax = state->board[(currentY+i) * state->width + currentX + j];
+                    if (distance > 1) {
+                        farPoints = planNextMove(currentX+j, currentY+i, state, distance-1, false);
+                    }
+                    if (currentMax < state->board[(currentY+i) * state->width + currentX + j] + farPoints) { 
+                        currentMax = state->board[(currentY+i) * state->width + currentX + j] + farPoints;
                         maxDir = directions[i+1][j+1];
                     }
                 }
             }
         }
     }
-    return (currentMax > 0) ? maxDir : worstDir;
+    
+    if (askDir) {
+        return (currentMax > 0) ? maxDir : worstDir;
+    }
+    return (currentMax > 0) ? currentMax : worstCase;
+    
 
 }    
 
@@ -111,5 +120,5 @@ unsigned char computeNextMove(GameState *localCopy, int x, int y)
     if (lastMove(x, y, localCopy)) {
         return(EOF);
     }
-    return(planNextMove(x, y, localCopy));
+    return(planNextMove(x, y, localCopy, 5, true));
 }
