@@ -138,7 +138,7 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
         if (numPlayersProcessed < numPlayers) {
             if (numPlayersProcessed < 0) {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
-                printf("%s     LEADERBOARD    |  PT | VM | IM |", SIGN);
+                printf("%s     LEADERBOARD    | Pnt | VMo | IMo |", SIGN);
             } else {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
                 int numPlayer;
