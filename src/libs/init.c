@@ -135,6 +135,10 @@ void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
         {
             // me guardo el PID del hijo (jugador i-ésimo)
             state->players[i].pid = pid;
+            char *slash = strrchr(params.players[i], '/');
+            const char *basename = slash ? slash+1 : params.players[i];
+            strncpy(state->players[i].name, basename, sizeof(state->players[i].name)-1);
+            state->players[i].name[sizeof(state->players[i].name)-1] = '\0';
         }
     }
 
