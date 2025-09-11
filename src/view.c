@@ -205,9 +205,9 @@ int comparePlayersPositions(const void *a, const void *b) {
     if (p1->score != p2->score)
         return p2->score - p1->score;
     if (p1->validMoves != p2->validMoves)
-        return p2->validMoves - p1->validMoves;
+        return p1->validMoves - p2->validMoves;
     if (p1->invalidMoves != p2->invalidMoves)    
-        return p2->invalidMoves - p1->invalidMoves;
+        return p1->invalidMoves - p2->invalidMoves;
     return strcmp(p1->name, p2->name);        
 
 }
