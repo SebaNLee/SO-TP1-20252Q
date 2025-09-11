@@ -86,7 +86,7 @@ void printHeader(int columns, int rows) {
         tabulate(columns, GRASS);
         if (rows == 10) {
             fillSpacesWithColor(TAB_NUMBER, RESET);
-            printf("%s     LEADERBOARD    |  PT | VM | IM |", SIGN);
+            printf("%s     LEADERBOARD    | Pnt | VMo | IMo |", SIGN);
         }
         newLine();
 
@@ -154,8 +154,10 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
                 fillSpacesWithColor(11 - strlen(leaderboard[numPlayersProcessed]->name), colors[numPlayer]);
                 printf("| %d%s |", leaderboard[numPlayersProcessed]->score, (leaderboard[numPlayersProcessed]->score < 100) ? 
                                    ((leaderboard[numPlayersProcessed]->score < 10) ?  "  " : " ") : "");
-                printf(" %d%s |", leaderboard[numPlayersProcessed]->validMoves, (leaderboard[numPlayersProcessed]->validMoves < 10) ? " " : "" );
-                printf(" %d%s %s|", leaderboard[numPlayersProcessed]->invalidMoves, (leaderboard[numPlayersProcessed]->invalidMoves < 10) ? " " : "", SIGN);
+                printf(" %d%s |", leaderboard[numPlayersProcessed]->validMoves, (leaderboard[numPlayersProcessed]->validMoves < 100) ? 
+                                   ((leaderboard[numPlayersProcessed]->validMoves < 10) ?  "  " : " ") : "");
+                printf(" %d%s %s|", leaderboard[numPlayersProcessed]->invalidMoves, (leaderboard[numPlayersProcessed]->invalidMoves < 100) ? 
+                                   ((leaderboard[numPlayersProcessed]->invalidMoves < 10) ?  "  " : " ") : "", SIGN);
             }
             
         }
@@ -173,7 +175,7 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
             tabulate(width, GRASS);
             if (numPlayersProcessed++ < numPlayers) {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
-                printf("%s-------------------------------------", SIGN);    
+                printf("%s---------------------------------------", SIGN);    
             }
             newLine();
         } 
