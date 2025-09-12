@@ -79,29 +79,19 @@ int main(int argc, char const *argv[]) {
             break;
         }
 
-        // si manda EOF interpretamos que el player no quiere jugar más
-        if(playerMove.move == EOF)
-        {
-            state->players[playerMove.playerIndex].isBlocked = 1;
+        // entro a región crítica de escritura
+        masterEntrySync(sync);
 
-            moveProcessedPostSync(sync, playerMove.playerIndex);
-        }
-        else
-        {
-            // entro a región crítica de escritura
-            masterEntrySync(sync);
+        validMove = processMove(state, playerMove.playerIndex, playerMove.move);
+        updateBlockedPlayers(state);
 
-            
-            validMove = processMove(state, playerMove.playerIndex, playerMove.move);
-
-            updateIfPlayerBlocked(state, playerMove.playerIndex);
-            
-            masterExitSync(sync);
-            // salgo de región crítica de escritura
+        masterExitSync(sync);
+        // salgo de región crítica de escritura
 
 
-            moveProcessedPostSync(sync, playerMove.playerIndex);
-        }
+        // notifico al jugador que jugó que su jugada fue procesada
+        moveProcessedPostSync(sync, playerMove.playerIndex);
+        
 
         if(validMove)
         {
