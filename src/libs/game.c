@@ -56,7 +56,7 @@ bool processMove(GameState * state, int i, unsigned char move) {
 }
 
 
-PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime)
+PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime, bool * isGameEnd)
 {
     PlayerMove toReturn = {.playerIndex = -1, .move = EOF};
     static int lastProcessedPlayer = 0;
@@ -90,9 +90,17 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     // chequear si algún jugador mandó movimiento
     int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
 
-
+    if (activity < 0)
+    {
+        *isGameEnd = true;
+    }
+    // no hubo writes de jugadores en tiempo timeout (entonces salgo)
+    else if(activity == 0)
+    {
+        *isGameEnd = true;
+    }
     // si hubo devoluciones, agarro con round robin al primer fd con datos
-    if(activity > 0)
+    else if(activity > 0)
     {
         int start = (lastProcessedPlayer++) % state->numPlayers;
 
