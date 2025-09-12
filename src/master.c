@@ -50,7 +50,7 @@ int main(int argc, char const *argv[]) {
         sem_post(&sync->move_processed[i]); 
     }
 
-    while(!state->isGameOver)
+    do
     {
         startTime = time(NULL);
         validMove = false;
@@ -79,7 +79,6 @@ int main(int argc, char const *argv[]) {
                 moveProcessedPostSync(sync, i);
             }
             
-            break;
         }
 
         // entro a región crítica de escritura
@@ -94,13 +93,25 @@ int main(int argc, char const *argv[]) {
 
         // notifico al jugador que jugó que su jugada fue procesada
         moveProcessedPostSync(sync, playerMove.playerIndex);
-        
 
+        // si todos están bloqueados termino juego
+        state->isGameOver = true;
+        for (int i = 0; i < state->numPlayers; i++)
+        {
+            if(state->players[i].isBlocked == false)
+            {
+                state->isGameOver = false;
+                break;
+            }
+        }
+        
+        
         if(validMove)
         {
             lastValidMoveTime = time(NULL);
         }
-    }
+
+    } while(!state->isGameOver);
 
     // último print de view
     viewPrintSync(sync);
