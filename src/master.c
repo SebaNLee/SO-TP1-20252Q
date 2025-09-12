@@ -66,7 +66,7 @@ int main(int argc, char const *argv[]) {
         {
             state->isGameOver = true;
 
-            // TODO hardcodeo, si termina juego entonces bloqueo a todos los jugadores
+            // si termina juego entonces bloqueo a todos los jugadores
             blockAllPlayers(state);
 
             // derpierto a jugadores para que se enteren que terminó el juego
@@ -91,6 +91,9 @@ int main(int argc, char const *argv[]) {
         // si todos están bloqueados termino juego
         if(allPlayersBlocked)
         {
+            // derpierto a jugadores para que se enteren que terminó el juego
+            moveProcessedPostAllSync(sync, state);
+
             state->isGameOver = true;
         }
         
