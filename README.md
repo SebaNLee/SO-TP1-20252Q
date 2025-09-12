@@ -1,24 +1,24 @@
 # Trabajo Practico 1 de Sistemas Operativos: ChompChamps
 ## 2do cuatrimestre 2025
 
-**Aclaracion**:Para poder correr el trabajo es necesario el uso de Docker.
+**Aclaracion**: Para poder correr el trabajo es necesario el uso de Docker.
 
 A continuación se detallan dentro de secciones los pasos para poder visualizar el trabajo práctico:
 
-### 1.Docker
+### 1. Docker
 Para inicializar contenedor de Docker:
     ```./docker.sh``` 
 
 Luego, en el contenedor:
     ```cd root```
 
-### 2.Makefile
+### 2. Makefile
 Antes de crear el archivo ejecutable es necesario correr:
     ```make clean```
 y luego para crear el ejecutable:
     ```make all```
 
-### 3.Correr ejecutable
+### 3. Correr ejecutable
 Para correr el programa puede elegir entre usar el binario provisto por la cátedra: 
 
     ./ChompChamps_x86-64 -v ./bin/view -p ./bin/player
