@@ -44,8 +44,7 @@ int main(int argc, char const *argv[]) {
     time_t lastValidMoveTime = time(NULL);
     bool validMove;
 
-    // en clase se dijo que se debían inicializar en 1, todos pueden mover
-    // TODO moverlo a init que está feo acá
+    // habilito a jugadores
     moveProcessedPostAllSync(sync, state);
 
     do
@@ -72,15 +71,17 @@ int main(int argc, char const *argv[]) {
                 state->players[i].isBlocked = true;
             }
 
-            // TODO hardcodeo, derpierto a jugadores
+            // derpierto a jugadores para que se enteren que terminó el juego
             moveProcessedPostAllSync(sync, state);
+
+            break;
         }
 
         // entro a región crítica de escritura
         masterEntrySync(sync);
 
         validMove = processMove(state, playerMove.playerIndex, playerMove.move);
-        updateBlockedPlayers(state);
+        bool allPlayersBlocked = updateBlockedPlayers(state);
 
         masterExitSync(sync);
         // salgo de región crítica de escritura
@@ -90,16 +91,10 @@ int main(int argc, char const *argv[]) {
         moveProcessedPostSync(sync, playerMove.playerIndex);
 
         // si todos están bloqueados termino juego
-        state->isGameOver = true;
-        for (int i = 0; i < state->numPlayers; i++)
+        if(allPlayersBlocked)
         {
-            if(state->players[i].isBlocked == false)
-            {
-                state->isGameOver = false;
-                break;
-            }
+            state->isGameOver = true;
         }
-        
         
         if(validMove)
         {
@@ -123,8 +118,6 @@ int main(int argc, char const *argv[]) {
     closeSHM(sync, sizeof(GameSync));
     unlinkSHM(GAME_STATE_SHM);
     unlinkSHM(GAME_SYNC_SHM);
-
-    
 
     return 0;
 }

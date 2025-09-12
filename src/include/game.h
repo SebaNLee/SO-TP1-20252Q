@@ -22,6 +22,6 @@ typedef struct {
 void setPlayerPosition(GameState * state, int width, int height, int numPlayers);
 bool processMove(GameState * state, int i, unsigned char move);
 PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime);
-void updateBlockedPlayers(GameState * state);
+bool updateBlockedPlayers(GameState * state);
 
 #endif

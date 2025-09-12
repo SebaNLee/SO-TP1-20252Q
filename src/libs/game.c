@@ -115,10 +115,12 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     return toReturn;
 }
 
-void updateBlockedPlayers(GameState * state)
+bool updateBlockedPlayers(GameState * state)
 {
     int xValue;
     int yValue;
+
+    bool allPlayersBlocked = true;
     
     for(int playerIndex = 0; playerIndex < state->numPlayers; playerIndex++)
     {
@@ -133,6 +135,7 @@ void updateBlockedPlayers(GameState * state)
             {
                 // si tiene al menos un movimiento válido
                 if(state->board[state->width * yValue + xValue] > 0){
+                    allPlayersBlocked = false;
                     hasValidMove = true;
                     break;
                 }
@@ -146,6 +149,6 @@ void updateBlockedPlayers(GameState * state)
         }
     }
 
-    return;
+    return allPlayersBlocked;
 }
 
