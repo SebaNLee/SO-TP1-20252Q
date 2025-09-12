@@ -21,5 +21,6 @@ typedef struct {
 
 
 MasterParameters setParams(int argc, char  * const argv[]);
+void printParams(MasterParameters params);
 
 #endif 

@@ -17,6 +17,9 @@ int main(int argc, char const *argv[]) {
     // parseo de parámetros
     MasterParameters params = setParams(argc, ( char * const *) argv);
 
+    // print de params (como binario ChompChamps)
+    printParams(params);
+
     GameState * state = (GameState*) createSHM(GAME_STATE_SHM, sizeof(GameState) + params.width * params.height * sizeof(int), true, true);
     GameSync * sync = (GameSync *) createSHM(GAME_SYNC_SHM, sizeof(GameSync), true, true);
 
