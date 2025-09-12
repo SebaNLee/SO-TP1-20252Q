@@ -102,9 +102,17 @@ void printParams(MasterParameters params)
     printf("\033[H\033[J");
     system("clear");
 
-    printf("width=%d\theight=%d\tdelay=%d\ttimeout=%d\tseed=%ld\tview=%s\tnumPlayers=%d\n", params.width, params.height, params.delay, params.timeout, params.seed, params.view, params.numPlayers);
-    for(int i=0; i<params.numPlayers; i++){
-        printf("player %d 's name=%s\n", i+1, params.players[i]);
+    printf("width: %d\n", params.width);
+    printf("height: %d\n", params.height);
+    printf("delay: %d\n", params.delay);
+    printf("timeout: %d\n", params.timeout);
+    printf("seed: %ld\n", params.seed);
+    printf("view: %s\n", params.view);
+    printf("num_players: %d\n", params.numPlayers);
+    for(int i = 0; i < params.numPlayers; i++)
+    {
+        printf("  %s\n", params.players[i]);
     }
+
     sleep(2);
 }
