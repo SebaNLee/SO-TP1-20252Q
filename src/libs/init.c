@@ -15,7 +15,7 @@ void initGameState(GameState * state, MasterParameters params)
     memset(state->board, 0, params.width * params.height * sizeof(int));
 
     // Generación de tablero
-    srand(time(NULL));
+    srand(params.seed);
 
     for (int i = 0; i < state->width * state->height; i++) {
         state->board[i] = (rand() % 9) + 1; 
