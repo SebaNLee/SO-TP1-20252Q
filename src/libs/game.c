@@ -152,3 +152,11 @@ bool updateBlockedPlayers(GameState * state)
     return allPlayersBlocked;
 }
 
+void blockAllPlayers(GameState * state)
+{
+    for (int i = 0; i < state->numPlayers; i++) {
+        state->players[i].isBlocked = true;
+    }
+
+    return;
+}
