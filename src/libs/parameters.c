@@ -106,6 +106,4 @@ void printParams(MasterParameters params)
         printf("player %d 's name=%s\n", i+1, params.players[i]);
     }
     sleep(2);
-
-    printf("\033[H\033[J");
 }
