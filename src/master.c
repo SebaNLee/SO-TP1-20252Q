@@ -59,10 +59,10 @@ int main(int argc, char const *argv[]) {
         usleep(params.delay * 1000);
 
         // espero jugada
-        bool isGameEnd = false;
-        PlayerMove playerMove = waitPlayerMove(state, pipesfd, params.timeout, startTime, &isGameEnd);
+        PlayerMove playerMove = waitPlayerMove(state, pipesfd, params.timeout, startTime);
 
-        if(isGameEnd || time(NULL) - lastValidMoveTime > params.timeout)
+        // si es que no hubo jugadas en timeout tiempo, termino juego
+        if(time(NULL) - lastValidMoveTime > params.timeout)
         {
             state->isGameOver = true;
 
