@@ -64,3 +64,10 @@ void viewWaitSync(GameSync * sync)
 {
     sem_wait(&sync->view_reading_pending);
 }
+
+void moveProcessedPostAllSync(GameSync * sync, GameState * state)
+{
+    for (int i = 0; i < state->numPlayers; i++) {
+        moveProcessedPostSync(sync, i);
+    }
+}

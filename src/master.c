@@ -46,9 +46,7 @@ int main(int argc, char const *argv[]) {
 
     // en clase se dijo que se debían inicializar en 1, todos pueden mover
     // TODO moverlo a init que está feo acá
-    for (int i = 0 ; i < state->numPlayers; i++) { 
-        sem_post(&sync->move_processed[i]); 
-    }
+    moveProcessedPostAllSync(sync, state);
 
     do
     {
@@ -75,10 +73,7 @@ int main(int argc, char const *argv[]) {
             }
 
             // TODO hardcodeo, derpierto a jugadores
-            for (int i = 0; i < state->numPlayers; i++) {
-                moveProcessedPostSync(sync, i);
-            }
-            
+            moveProcessedPostAllSync(sync, state);
         }
 
         // entro a región crítica de escritura
