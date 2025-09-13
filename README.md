@@ -24,11 +24,11 @@ Para correr el programa:
     ./bin/master -v ./bin/view -p ./bin/player
 
 Además, hay 7 parámetros que acepta el ejecutable, aquellos que se encuentran entre corchetes son opcionales:
-#### Altura:
+#### Height:
 Modifica la altura del tablero donde se produce el juego:```[-h tamaño]```
 
 El tamaño deberá ser un numero entero mayor a 10. Su valor default es de 10.
-#### Ancho:
+#### Width:
 Modifica el ancho del tablero donde se produce el juego:```[-w tamaño]```
  
 El tamaño deberá ser un numero entero mayor a 10. Su valor default es de 10.
@@ -42,18 +42,18 @@ Modifica la cantidad de segundos que se espera para recibir solicitudes de movim
 El tiempo deberá ser un numero mayor a cero. Su valor default es de 10.
 
 
-#### Semilla:
+#### Seed:
 Modifica la semilla utilizada para la generación del tablero:```[-s semilla]```
 
 La semilla deberá ser un numero mayor a cero. Su valor default es el correspondiente a time(NULL).
 
 
-#### Vista:
+#### View:
 Modifica la vista utilizada para la generación del tablero. Para esto se coloca la ruta del archivo binario de la vista:```[-v rutaDelBinario]```
 
 Su default es sin vista.
 
-#### Jugador/es:
+#### Player:
 Modifica los jugadores utilizada para la generación de la partida. Para esto se coloca la ruta del archivo binario de los jugadores. Es posible agregar desde 1 a 9 jugadores:
 ```-p rutaDelBinario1 rutaDelBinario2```
 
