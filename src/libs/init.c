@@ -66,7 +66,7 @@ void initGameSync(GameSync *sync)
     }
 }
 
-int freeGameSync(GameSync *sync)
+void freeGameSync(GameSync *sync)
 {
     if (sem_destroy(&sync->view_reading_pending) == ERROR)
     {
@@ -102,7 +102,7 @@ int freeGameSync(GameSync *sync)
         }
     }
 
-    return SUCCESS;
+    return;
 }
 
 void initPlayers(MasterParameters params, GameState *state, int pipesfd[][2])
