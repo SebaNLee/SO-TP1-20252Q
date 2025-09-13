@@ -16,13 +16,6 @@ int main(int argc, char const *argv[])
     // parseo de parámetros
     MasterParameters params = setParams(argc, (char *const *)argv);
 
-    // chequeo si se especificó una vista o no
-    int viewPID;
-    if (params.view == NULL)
-    {
-        viewPID = NO_VIEW;
-    }
-
     // print de params (como binario ChompChamps)
     printParams(params);
 
@@ -38,7 +31,14 @@ int main(int argc, char const *argv[])
 
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
-    if (viewPID != NO_VIEW)
+
+    // chequeo si se especificó una vista o no
+    int viewPID;
+    if (params.view == NULL)
+    {
+        viewPID = NO_VIEW;
+    }
+    else
     {
         viewPID = initView(params);
     }
@@ -122,13 +122,11 @@ int main(int argc, char const *argv[])
     {
         // último print de view
         viewPrintSync(sync);
-    }
 
-    // wait de procesos (para que no queden zombies)
-    if (viewPID != NO_VIEW)
-    {
+        // wait de view (para que no quede zombie)
         waitView(viewPID);
     }
+    // wait de players (para que no queden zombies)
     waitPlayers(state);
 
     // libero pipes
