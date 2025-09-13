@@ -42,6 +42,11 @@ int main(int argc, char * argv[]) {
         size_t stateSize = sizeof(GameState) + state->width * state->height * sizeof(int);
         GameState *localCopy = malloc(stateSize);
 
+        if (localCopy == NULL) {
+            perror("Error in malloc");
+            exit(EXIT_FAILURE);
+        }
+
         memcpy(localCopy, state, stateSize);
         
 
@@ -50,7 +55,10 @@ int main(int argc, char * argv[]) {
         unsigned char nextMove = computeNextMove(localCopy, playerID);
         free(localCopy);
 
-        write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)); 
+        if (write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)) == ERROR) {
+            perror("Error in write");
+            exit(EXIT_FAILURE);
+        } 
     }
 
 

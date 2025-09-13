@@ -27,25 +27,25 @@ void initGameSync(GameSync * sync)
     // Master <-> Vista
     if (sem_init(&sync->view_reading_pending, 1, 0) == ERROR) {
          perror("sem_init view_reading_pending\n");
-         exit(1); 
+         exit(EXIT_FAILURE); 
         }
     if (sem_init(&sync->view_writing_done, 1, 0) == ERROR) {
          perror("sem_init view_writing_done\n");
-         exit(1); 
+         exit(EXIT_FAILURE); 
         }
 
     // Lectores <-> Escritor
     if (sem_init(&sync->mutex_master_access, 1, 1) == ERROR) {
          perror("sem_init   mutex_master_access\n"); 
-        exit(1); 
+        exit(EXIT_FAILURE); 
     } 
     if (sem_init(&sync->mutex_game_state_access, 1, 1) == ERROR) {
          perror("sem_init mutex_game_state_access\n");
-         exit(1); 
+         exit(EXIT_FAILURE); 
         }
     if (sem_init(&sync->mutex_readers_counter, 1, 1) == ERROR) {
          perror("sem_init mutex_readers_counter\n"); 
-         exit(1);
+         exit(EXIT_FAILURE);
          }
 
     // Contador de lectores
@@ -55,7 +55,7 @@ void initGameSync(GameSync * sync)
     for (int i = 0; i < 9; i++) {
         if (sem_init(&sync->move_processed[i], 1, 0) == ERROR) {
             perror("sem_init send_move[i]\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -64,28 +64,28 @@ void initGameSync(GameSync * sync)
 int freeGameSync(GameSync * sync) {
    if( sem_destroy(&sync->view_reading_pending)==ERROR){
     perror("sem_destroy view_reading_pending\n");
-    return ERROR;
+    exit(EXIT_FAILURE);
    }
     if( sem_destroy(&sync->view_writing_done)==ERROR){
     perror("sem_destroy view_writing_done\n");
-    return ERROR;
+    exit(EXIT_FAILURE);
    }
     if( sem_destroy(&sync->mutex_master_access)==ERROR){
     perror("sem_destroy mutex_master_access\n");
-    return ERROR;
+    exit(EXIT_FAILURE);
    }
     if( sem_destroy(&sync->mutex_game_state_access)==ERROR){
     perror("sem_destroy mutex_game_state_access\n");
-    return ERROR;
+    exit(EXIT_FAILURE);
    }
    if( sem_destroy(&sync->mutex_readers_counter)==ERROR){
     perror("sem_destroy mutex_readers_counter\n");
-    return ERROR;
+    exit(EXIT_FAILURE);
    }
    for (int i = 0; i < 9; i++) {
         if (sem_destroy(&sync->move_processed[i]) == ERROR) {
             perror("sem_destroy send_move[i]\n");
-            return ERROR;
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -102,24 +102,30 @@ void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
         if(pid < 0)
         {
             perror("fork() error\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else if(pid == 0) // hijo
         {
             // consigna: "El máster garantiza que el extremo de escritura de este pipe esté asociado al descriptor de archivo 1"
 
             // cierro read end del pide del player
-            close(pipesfd[i][PIPE_READ_END]);
+            if (close(pipesfd[i][PIPE_READ_END]) == ERROR) {
+                perror("Error in close");
+                exit(EXIT_FAILURE);
+            }
 
             // copia write end del pipe al STDOUT del player 
-            if(dup2(pipesfd[i][PIPE_WRITE_END], STDOUT_FILENO) == -1)
+            if(dup2(pipesfd[i][PIPE_WRITE_END], STDOUT_FILENO) == ERROR)
             {
                 perror("dup2() error\n");
-                exit(1);
+                exit(EXIT_FAILURE);
             }
 
             // cierro el write end del pipe original (ya está en STDOUT)
-            close(pipesfd[i][PIPE_WRITE_END]);
+            if (close(pipesfd[i][PIPE_WRITE_END]) == ERROR) {
+                perror("Error in close");
+                exit(EXIT_FAILURE);
+            }
 
             // preparo argumentos para player
             char widthStr[16];
@@ -129,7 +135,10 @@ void initPlayers(MasterParameters params, GameState * state, int pipesfd[][2])
             char * playerArgv[] = {params.players[i], widthStr, heightStr, NULL};
 
             // ejecuto proceso player
-            execv(params.players[i], playerArgv); // TODO tal vez esto es execve? no entiendo la parte de envp ??
+            if (execv(params.players[i], playerArgv) == ERROR) { // TODO tal vez esto es execve? no entiendo la parte de envp ??
+                perror("Error in execv");
+                exit(EXIT_FAILURE);
+            }    
         }
         else // padre
         {
@@ -155,7 +164,7 @@ int initView(MasterParameters params)
     if(pid < 0)
     {
         perror("fork() error\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     else if(pid == 0) // hijo
     {
@@ -165,7 +174,10 @@ int initView(MasterParameters params)
         snprintf(heightStr, sizeof(heightStr), "%d", params.height);
         char * viewArgv[] = {params.view, widthStr, heightStr, NULL};
 
-        execv(params.view, viewArgv); // TODO tal vez esto es execve? no entiendo la parte de envp ??
+        if (execv(params.view, viewArgv) == ERROR) { // TODO tal vez esto es execve? no entiendo la parte de envp ??
+            perror("Error in execv");
+            exit(EXIT_FAILURE);
+        }    
     }
     
     return pid;
@@ -177,10 +189,10 @@ void initPipes(int pipesfd[][2], int numPlayers)
     for(int i = 0; i < numPlayers; i++)
     {
         // creo pipes y obtengo fds
-        if(pipe(pipesfd[i]) == -1)
+        if(pipe(pipesfd[i]) == ERROR)
         {
             perror("Error inicializando pipes\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -192,8 +204,10 @@ void freePipes(int pipesfd[][2], int numPlayers)
 {
     for(int i = 0; i < numPlayers; i++)
     {
-        close(pipesfd[i][PIPE_READ_END]);
-        close(pipesfd[i][PIPE_WRITE_END]);
+        if ( ( close(pipesfd[i][PIPE_READ_END]) == ERROR) || (close(pipesfd[i][PIPE_WRITE_END]) == ERROR) ) {
+            perror("Error in close");
+            exit(EXIT_FAILURE);
+        }    
     }
 
     return;

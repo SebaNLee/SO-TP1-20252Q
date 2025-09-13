@@ -90,6 +90,11 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     // chequear si algún jugador mandó movimiento
     int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
 
+    if (activity == ERROR) {
+        perror("Error in select");
+        exit(EXIT_FAILURE);
+    }
+
     // si hubo devoluciones, agarro con round robin al primer fd con datos
     if(activity > 0)
     {
@@ -102,7 +107,10 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
             if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
                 
                 unsigned char move;
-                read(pipesfd[i][PIPE_READ_END], &move, sizeof(move));
+                if (read(pipesfd[i][PIPE_READ_END], &move, sizeof(move)) == ERROR) {
+                    perror("Error in read");
+                    exit(EXIT_FAILURE);
+                }
 
                 toReturn.playerIndex = i;
                 toReturn.move = move;

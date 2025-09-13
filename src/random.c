@@ -45,7 +45,7 @@ int main(int argc, char * argv[]) {
         if(localCopy == NULL)
         {
             perror("malloc error");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         
         memcpy(localCopy, state, stateSize);
@@ -56,7 +56,10 @@ int main(int argc, char * argv[]) {
         unsigned char nextMove = computeNextMove(localCopy, playerID);
         free(localCopy);
 
-        write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)); 
+        if (write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)) == ERROR) {
+            perror("Error in write");
+            exit(EXIT_FAILURE);
+        }
     }
 
 

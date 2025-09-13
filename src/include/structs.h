@@ -13,6 +13,9 @@
 #include <stdbool.h>
 // TODO sacar lo que no se use
 
+#define ERROR -1
+#define SUCCESS 0
+
 typedef struct {
     char name[16];
     unsigned int score;

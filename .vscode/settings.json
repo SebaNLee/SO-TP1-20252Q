@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "sync.h": "c",
+        "structs.h": "c",
+        "parameters.h": "c",
+        "init.h": "c"
     }
 }

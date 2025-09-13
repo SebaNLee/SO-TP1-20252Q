@@ -13,15 +13,15 @@ void * createSHM(const char *name, size_t size, bool create, bool write) {
 
     // Creación de memoria
     int fd = shm_open(name, oflag, 0666);
-    if (fd == -1) {
+    if (fd == ERROR) {
         perror("Failed to create shared memory");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Ajuste de tamaño
-    if (create && ftruncate(fd, size) == -1) {
+    if (create && ftruncate(fd, size) == ERROR) {
         perror("Failed to truncate shared memory");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     int prot = PROT_READ | (write ? PROT_WRITE : 0);
@@ -29,11 +29,14 @@ void * createSHM(const char *name, size_t size, bool create, bool write) {
     void * ptr = mmap(0, size, prot, MAP_SHARED, fd, 0);
     if (ptr == MAP_FAILED) {
         perror("Failed to map memory");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Ya no lo necesitamos
-    close(fd);
+    if (close(fd) == ERROR) {
+        perror("Error in close");
+        exit(EXIT_FAILURE);
+    }
     return ptr;
 
 }
@@ -41,20 +44,20 @@ void * createSHM(const char *name, size_t size, bool create, bool write) {
 
 void closeSHM(void * ptr, int size)
 {
-    if(munmap(ptr, size) == -1)
+    if(munmap(ptr, size) == ERROR)
     {
         perror("munmap() error\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
 
 void unlinkSHM(const char * name)
 {
-    if(shm_unlink(name) == -1)
+    if(shm_unlink(name) == ERROR)
     {
         perror("shm_unlink() error\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return;

@@ -56,7 +56,10 @@ int main(int argc, char const *argv[]) {
         viewPrintSync(sync);
 
         // consigna, delay después de imprimir con view
-        usleep(params.delay * 1000);
+        if (usleep(params.delay * 1000) == ERROR) {
+            perror("Error in usleep");
+            exit(EXIT_FAILURE);
+        }
 
         // espero jugada
         PlayerMove playerMove = waitPlayerMove(state, pipesfd, params.timeout, startTime);
