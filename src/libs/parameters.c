@@ -17,7 +17,8 @@ MasterParameters setParams(int argc, char *const argv[])
                                .delay = 200,
                                .timeout = 10,
                                .numPlayers = 0,
-                               .seed = time(NULL)};
+                               .seed = time(NULL),
+                               .view = NULL};
 
     int op;
 
@@ -114,7 +115,14 @@ void printParams(MasterParameters params)
     printf("delay: %d\n", params.delay);
     printf("timeout: %d\n", params.timeout);
     printf("seed: %ld\n", params.seed);
-    printf("view: %s\n", params.view);
+    if (params.view == NULL)
+    {
+        printf("view: -\n");
+    }
+    else
+    {
+        printf("view: %s\n", params.view);
+    }
     printf("num_players: %d\n", params.numPlayers);
     for (int i = 0; i < params.numPlayers; i++)
     {
@@ -122,4 +130,7 @@ void printParams(MasterParameters params)
     }
 
     sleep(2);
+
+    printf("\033[H\033[J");
+    system("clear");
 }

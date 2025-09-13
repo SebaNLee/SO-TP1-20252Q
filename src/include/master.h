@@ -14,5 +14,6 @@
 #define PIPE_WRITE_END 1
 #define ERROR -1
 #define SUCCESS 0
+#define NO_VIEW -1
 
 #endif

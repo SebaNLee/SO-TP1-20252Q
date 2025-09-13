@@ -16,6 +16,13 @@ int main(int argc, char const *argv[])
     // parseo de parámetros
     MasterParameters params = setParams(argc, (char *const *)argv);
 
+    // chequeo si se especificó una vista o no
+    int viewPID;
+    if (params.view == NULL)
+    {
+        viewPID = NO_VIEW;
+    }
+
     // print de params (como binario ChompChamps)
     printParams(params);
 
@@ -31,7 +38,10 @@ int main(int argc, char const *argv[])
 
     // inicializo jugadores y vista
     initPlayers(params, state, pipesfd);
-    int viewPID = initView(params);
+    if (viewPID != NO_VIEW)
+    {
+        viewPID = initView(params);
+    }
     setPlayerPosition(state, state->width, state->height, state->numPlayers);
 
     // es por si otro procesos como view del master consumen demasiado tiempo
@@ -50,14 +60,17 @@ int main(int argc, char const *argv[])
         startTime = time(NULL);
         validMove = false;
 
-        // indico a view que imprima y espero a que termine
-        viewPrintSync(sync);
-
-        // consigna, delay después de imprimir con view
-        if (usleep(params.delay * 1000) == ERROR)
+        if (viewPID != NO_VIEW)
         {
-            perror("Error in usleep");
-            exit(EXIT_FAILURE);
+            // indico a view que imprima y espero a que termine
+            viewPrintSync(sync);
+
+            // consigna, delay después de imprimir con view
+            if (usleep(params.delay * 1000) == ERROR)
+            {
+                perror("Error in usleep");
+                exit(EXIT_FAILURE);
+            }
         }
 
         // espero jugada
@@ -105,11 +118,18 @@ int main(int argc, char const *argv[])
 
     } while (!state->isGameOver);
 
-    // último print de view
-    viewPrintSync(sync);
+    if (viewPID != NO_VIEW)
+    {
+        // último print de view
+        viewPrintSync(sync);
+    }
 
     // wait de procesos (para que no queden zombies)
-    waitViewAndPlayers(state, viewPID);
+    if (viewPID != NO_VIEW)
+    {
+        waitView(viewPID);
+    }
+    waitPlayers(state);
 
     // libero pipes
     freePipes(pipesfd, state->numPlayers);

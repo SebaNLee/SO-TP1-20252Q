@@ -189,7 +189,7 @@ int initView(MasterParameters params)
         char *viewArgv[] = {params.view, widthStr, heightStr, NULL};
 
         if (execv(params.view, viewArgv) == ERROR)
-        { // TODO tal vez esto es execve? no entiendo la parte de envp ??
+        {
             perror("Error in execv");
             exit(EXIT_FAILURE);
         }
@@ -227,18 +227,10 @@ void freePipes(int pipesfd[][2], int numPlayers)
     return;
 }
 
-void waitViewAndPlayers(GameState *state, int viewPID)
+void waitPlayers(GameState *state)
 {
     int wstatus;
 
-    // view
-    waitpid(viewPID, &wstatus, 0);
-    if (WIFEXITED(wstatus))
-    {
-        printf("View exited (%d)\n", WEXITSTATUS(wstatus));
-    }
-
-    // players
     for (size_t i = 0; i < state->numPlayers; i++)
     {
         waitpid(state->players[i].pid, &wstatus, 0);
@@ -246,5 +238,16 @@ void waitViewAndPlayers(GameState *state, int viewPID)
         {
             printf("Player %s (%ld) exited (%d) with a score of %d / %d / %d\n", state->players[i].name, i, WEXITSTATUS(wstatus), state->players[i].score, state->players[i].validMoves, state->players[i].invalidMoves);
         }
+    }
+}
+
+void waitView(int viewPID)
+{
+    int wstatus;
+
+    waitpid(viewPID, &wstatus, 0);
+    if (WIFEXITED(wstatus))
+    {
+        printf("View exited (%d)\n", WEXITSTATUS(wstatus));
     }
 }

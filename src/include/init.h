@@ -20,6 +20,7 @@ void initPlayers(MasterParameters params, GameState *state, int pipesfd[][2]);
 int initView(MasterParameters params);
 void initPipes(int pipesfd[][2], int numPlayers);
 void freePipes(int pipesfd[][2], int numPlayers);
-void waitViewAndPlayers(GameState *state, int viewPID);
+void waitPlayers(GameState *state);
+void waitView(int viewPID);
 
 #endif
