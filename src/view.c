@@ -101,7 +101,7 @@ void printHeader(int columns, int rows)
     if (rows == 10)
     {
         fillSpacesWithColor(TAB_NUMBER, RESET);
-        printf("%s     LEADERBOARD    | Pnt | VMo | IMo |", SIGN);
+        printf("%s        LEADERBOARD       | Pnt | VMo | IMo |", SIGN);
     }
     newLine();
 }
@@ -168,7 +168,7 @@ void printTableContent(GameState *state, int width, int height, Player **leaderb
             if (numPlayersProcessed < 0)
             {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
-                printf("%s     LEADERBOARD    | Pnt | VMo | IMo |", SIGN);
+                printf("%s        LEADERBOARD       | Pnt | VMo | IMo |", SIGN);
             }
             else
             {
@@ -183,7 +183,7 @@ void printTableContent(GameState *state, int width, int height, Player **leaderb
                 }
                 printf("%s|%s  %d°. %s|%s %s", SIGN, (9 + numPlayersProcessed <= 11) ? colors[9 + numPlayersProcessed] : RESET, numPlayersProcessed + 1, SIGN,
                        colors[numPlayer], leaderboard[numPlayersProcessed]->name);
-                fillSpacesWithColor(11 - strlen(leaderboard[numPlayersProcessed]->name), colors[numPlayer]);
+                fillSpacesWithColor(17 - strlen(leaderboard[numPlayersProcessed]->name), colors[numPlayer]);
                 printf("| %d%s |", leaderboard[numPlayersProcessed]->score, (leaderboard[numPlayersProcessed]->score < 100) ? ((leaderboard[numPlayersProcessed]->score < 10) ? "  " : " ") : "");
                 printf(" %d%s |", leaderboard[numPlayersProcessed]->validMoves, (leaderboard[numPlayersProcessed]->validMoves < 100) ? ((leaderboard[numPlayersProcessed]->validMoves < 10) ? "  " : " ") : "");
                 printf(" %d%s %s|", leaderboard[numPlayersProcessed]->invalidMoves, (leaderboard[numPlayersProcessed]->invalidMoves < 100) ? ((leaderboard[numPlayersProcessed]->invalidMoves < 10) ? "  " : " ") : "", SIGN);
@@ -206,7 +206,7 @@ void printTableContent(GameState *state, int width, int height, Player **leaderb
             if (numPlayersProcessed++ < numPlayers)
             {
                 fillSpacesWithColor(TAB_NUMBER, RESET);
-                printf("%s---------------------------------------", SIGN);
+                printf("%s---------------------------------------------", SIGN);
             }
             newLine();
         }
