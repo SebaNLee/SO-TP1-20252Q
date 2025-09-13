@@ -11,8 +11,7 @@
 #include <sys/wait.h>
 
 
-#define ERROR -1
-#define SUCCESS 0
+
 #define PIPE_READ_END 0
 #define PIPE_WRITE_END 1
 
