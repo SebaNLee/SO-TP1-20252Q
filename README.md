@@ -19,11 +19,7 @@ y luego para crear el ejecutable:
     ```make all```
 
 ### 3. Correr ejecutable
-Para correr el programa puede elegir entre usar el binario provisto por la cátedra: 
-
-    ./ChompChamps_x86-64 -v ./bin/view -p ./bin/player
-    
-o el creado por los alumnos:
+Para correr el programa:
 
     ./bin/master -v ./bin/view -p ./bin/player
 
