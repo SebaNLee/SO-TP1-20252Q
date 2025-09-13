@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "parameters.h"
 #include <math.h>
-#include <sys/select.h>  
+#include <sys/select.h>
 #include <time.h>
 
 #define PIPE_READ_END 0
@@ -12,17 +12,16 @@
 
 #define DIRECTION_OPTIONS 8
 
-
-typedef struct {
+typedef struct
+{
     unsigned char move;
-    int playerIndex; 
+    int playerIndex;
 } PlayerMove;
 
-
-void setPlayerPosition(GameState * state, int width, int height, int numPlayers);
-bool processMove(GameState * state, int i, unsigned char move);
-PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime);
-bool updateBlockedPlayers(GameState * state);
-void blockAllPlayers(GameState * state);
+void setPlayerPosition(GameState *state, int width, int height, int numPlayers);
+bool processMove(GameState *state, int i, unsigned char move);
+PlayerMove waitPlayerMove(GameState *state, int pipesfd[][2], int timeout, time_t startTime);
+bool updateBlockedPlayers(GameState *state);
+void blockAllPlayers(GameState *state);
 
 #endif

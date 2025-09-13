@@ -14,13 +14,8 @@
 #include <string.h>
 #include "structs.h"
 
-
-
-void * createSHM(const char *name, size_t size, bool create, bool write);
-void closeSHM(void * ptr, int size);
-void unlinkSHM(const char * name);
-
-
-
+void *createSHM(const char *name, size_t size, bool create, bool write);
+void closeSHM(void *ptr, int size);
+void unlinkSHM(const char *name);
 
 #endif

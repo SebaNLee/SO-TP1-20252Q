@@ -6,21 +6,20 @@
 #define MINPLAYERS 1
 #define MAXPLAYERS 9
 
-typedef struct {
+typedef struct
+{
     int width;
     int height;
     int delay;
     int timeout;
     long seed;
-    char * view;
+    char *view;
     int numPlayers;
-    char * players[MAXPLAYERS];
+    char *players[MAXPLAYERS];
 
 } MasterParameters;
 
-
-
-MasterParameters setParams(int argc, char  * const argv[]);
+MasterParameters setParams(int argc, char *const argv[]);
 void printParams(MasterParameters params);
 
-#endif 
+#endif

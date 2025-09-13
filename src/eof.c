@@ -1,6 +1,16 @@
-#include "player.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 #include "structs.h"
+#include "shm.h"
 #include "sync.h"
+#include "math.h"
+
+unsigned char computeNextMove()
+{
+    return EOF;
+}
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +60,7 @@ int main(int argc, char *argv[])
 
         playerExitSync(sync);
 
-        unsigned char nextMove = computeNextMove(localCopy, playerID);
+        unsigned char nextMove = computeNextMove();
         free(localCopy);
 
         if (write(STDOUT_FILENO, &nextMove, sizeof(unsigned char)) == ERROR)
@@ -65,9 +75,4 @@ int main(int argc, char *argv[])
     closeSHM(sync, syncSize);
 
     return 0;
-}
-
-unsigned char computeNextMove(GameState *localCopy, int playerID)
-{
-    return EOF;
 }

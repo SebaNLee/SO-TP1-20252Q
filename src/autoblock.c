@@ -1,6 +1,24 @@
-#include "player.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 #include "structs.h"
+#include "shm.h"
 #include "sync.h"
+#include "math.h"
+
+unsigned char computeNextMove()
+{
+    unsigned char moves[] = {0, 0, 2, 2, 4, 4, 6, 0, 1, 1, 1, 1, 1, 1};
+    static int i = 0;
+
+    if (i > 10)
+    {
+        return 1;
+    }
+
+    return moves[i++];
+}
 
 int main(int argc, char *argv[])
 {
@@ -50,7 +68,7 @@ int main(int argc, char *argv[])
 
         playerExitSync(sync);
 
-        unsigned char nextMove = computeNextMove(localCopy, playerID);
+        unsigned char nextMove = computeNextMove();
 
         free(localCopy);
 
@@ -66,17 +84,4 @@ int main(int argc, char *argv[])
     closeSHM(sync, syncSize);
 
     return 0;
-}
-
-unsigned char computeNextMove(GameState *localCopy, int playerID)
-{
-    unsigned char moves[] = {0, 0, 2, 2, 4, 4, 6, 0, 1, 1, 1, 1, 1, 1};
-    static int i = 0;
-
-    if (i > 10)
-    {
-        return 1;
-    }
-
-    return (moves[i++]);
 }

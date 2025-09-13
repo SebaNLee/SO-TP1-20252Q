@@ -11,39 +11,41 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdbool.h>
-// TODO sacar lo que no se use
 
 #define ERROR -1
 #define SUCCESS 0
 
-typedef struct {
+typedef struct
+{
     char name[16];
     unsigned int score;
     unsigned int invalidMoves;
     unsigned int validMoves;
     unsigned short x, y;
     pid_t pid;
-    bool isBlocked; 
+    bool isBlocked;
 } Player;
 
-typedef struct {
+typedef struct
+{
     unsigned short width;
     unsigned short height;
     unsigned int numPlayers;
     Player players[9];
-    bool isGameOver; 
+    bool isGameOver;
     int board[];
 } GameState;
 
-typedef struct {
- 
-    sem_t view_reading_pending; 
-    sem_t view_writing_done; 
-    sem_t mutex_master_access; 
+typedef struct
+{
+
+    sem_t view_reading_pending;
+    sem_t view_writing_done;
+    sem_t mutex_master_access;
     sem_t mutex_game_state_access;
     sem_t mutex_readers_counter;
-    unsigned int readers_counter; 
-    sem_t move_processed[9]; 
+    unsigned int readers_counter;
+    sem_t move_processed[9];
 } GameSync;
 
 #endif
