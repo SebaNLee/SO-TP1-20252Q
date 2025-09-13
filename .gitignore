@@ -12,3 +12,6 @@
 # ChompChamps :)
 ChompChamps_arm
 ChompChamps_x86-64
+
+#.txt para notas
+*.txt
