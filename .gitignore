@@ -3,13 +3,12 @@
 # del Docker
 .bash_history
 
-
 # binarios
 /bin
-
-
-
 
 # objetos
 *.o
 
+# ChompChamps :)
+ChompChamps_arm
+ChompChamps_x86-64

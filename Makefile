@@ -34,9 +34,3 @@ all: $(TARGETS)
 clean:
 	rm -rf $(BIN_DIR)/*
 
-
-
-#NOTA
-# se deja el ChompChamps binario en el directorio /root
-# por ahora se usa eso para ejecutar programas
-# más adelante se haría ejecutaría con /bin/master
