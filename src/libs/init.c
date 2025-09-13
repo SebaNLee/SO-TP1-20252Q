@@ -190,7 +190,7 @@ int initView(MasterParameters params)
 
         if (execv(params.view, viewArgv) == ERROR)
         {
-            perror("Error in execv");
+            perror("execv: ");
             exit(EXIT_FAILURE);
         }
     }
