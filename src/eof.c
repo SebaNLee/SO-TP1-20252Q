@@ -41,6 +41,7 @@ int main(int argc, char * argv[]) {
     
         size_t stateSize = sizeof(GameState) + state->width * state->height * sizeof(int);
         GameState *localCopy = malloc(stateSize);
+
         memcpy(localCopy, state, stateSize);
         
 

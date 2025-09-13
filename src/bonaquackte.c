@@ -42,6 +42,13 @@ int main(int argc, char * argv[]) {
       
         size_t stateSize = sizeof(GameState) + state->width * state->height * sizeof(int);
         GameState *localCopy = malloc(stateSize);
+
+        if(localCopy == NULL)
+        {
+            perror("malloc error");
+            exit(1);
+        }
+        
         memcpy(localCopy, state, stateSize);
         
         playerExitSync(sync);

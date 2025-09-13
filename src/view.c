@@ -118,11 +118,19 @@ void printTableContent(GameState * state, int width, int height, Player ** leade
                     isHead = 1;
             }
 
+            // por PVS Studio
+            int playerIndex = abs(val);
+            if(playerIndex >= sizeof(colors) / sizeof(colors[0]))
+            {
+                perror("Se re fue playerIndex en view.c");
+                exit(1);
+            }
+
             if(val <= 0) {
                 if (isHead) {
-                    printf("║%s🦆 %s", colors[abs(val)], WATER);
+                    printf("║%s🦆 %s", colors[playerIndex], WATER);
                 } else {
-                    printf("║%s   %s", colors[abs(val)], WATER); 
+                    printf("║%s   %s", colors[playerIndex], WATER); 
                 }
             } else {
                 printf("║ %d ", val);
