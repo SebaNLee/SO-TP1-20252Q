@@ -1,21 +1,22 @@
 #include "game.h"
 
 int rowMov[DIRECTION_OPTIONS] = {-1, -1, 0, 1, 1, 1, 0, -1};
-int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1}; 
+int columnMov[DIRECTION_OPTIONS] = {0, 1, 1, 1, 0, -1, -1, -1};
 
+// separa el tablero por regiones y le asigna el centro de cada region a un jugador
+void setPlayerPosition(GameState *state, int width, int height, int numPlayers)
+{
 
-//separa el tablero por regiones y le asigna el centro de cada region a un jugador
-void setPlayerPosition(GameState * state, int width, int height, int numPlayers){
-  
     int rows, cols;
-
 
     rows = cols = (int)ceil(sqrt(numPlayers));
 
     int idx = 0;
-    for (int r = 0; r < rows && idx < numPlayers; r++) {
-        for (int c = 0; c < cols && idx < numPlayers; c++) {
-            
+    for (int r = 0; r < rows && idx < numPlayers; r++)
+    {
+        for (int c = 0; c < cols && idx < numPlayers; c++)
+        {
+
             int x = (c * width / cols) + (width / (2 * cols));
             int y = (r * height / rows) + (height / (2 * rows));
 
@@ -23,27 +24,29 @@ void setPlayerPosition(GameState * state, int width, int height, int numPlayers)
             state->players[idx].y = y;
 
             // marcar celda como tomada por este jugador
-            state->board[y * width + x] = -(idx); 
+            state->board[y * width + x] = -(idx);
 
             idx++;
         }
     }
-
 }
 
-
 // devuelve true si es jugada válida, false si no es inválida
-bool processMove(GameState * state, int i, unsigned char move) {
+bool processMove(GameState *state, int i, unsigned char move)
+{
 
     char diry = rowMov[move];
     char dirx = columnMov[move];
 
     int finalXpos = state->players[i].x + dirx;
     int finalYpos = state->players[i].y + diry;
-    if ( finalXpos < 0 || finalXpos >= state->width || finalYpos < 0 || finalYpos >= state->height || state->board[finalXpos + state->width * finalYpos] <= 0) {
+    if (finalXpos < 0 || finalXpos >= state->width || finalYpos < 0 || finalYpos >= state->height || state->board[finalXpos + state->width * finalYpos] <= 0)
+    {
         state->players[i].invalidMoves++;
         return false;
-    } else {
+    }
+    else
+    {
         state->players[i].score += state->board[finalXpos + state->width * finalYpos];
         state->players[i].validMoves++;
         state->board[finalXpos + state->width * finalYpos] = -i;
@@ -52,11 +55,9 @@ bool processMove(GameState * state, int i, unsigned char move) {
 
         return true;
     }
-
 }
 
-
-PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time_t startTime)
+PlayerMove waitPlayerMove(GameState *state, int pipesfd[][2], int timeout, time_t startTime)
 {
     PlayerMove toReturn = {.playerIndex = -1, .move = EOF};
     static int lastProcessedPlayer = 0;
@@ -67,13 +68,15 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
 
     // Cálculo de maxfd
     int maxfd = 0;
-    for (int i = 0; i < state->numPlayers; i++) {
+    for (int i = 0; i < state->numPlayers; i++)
+    {
         if (pipesfd[i][PIPE_READ_END] > maxfd)
             maxfd = pipesfd[i][PIPE_READ_END];
     }
 
     // meto al set los pipes de los jugadores activos
-    for (int i = 0; i < state->numPlayers; i++) {
+    for (int i = 0; i < state->numPlayers; i++)
+    {
         if (!state->players[i].isBlocked)
             FD_SET(pipesfd[i][PIPE_READ_END], &fds);
     }
@@ -85,29 +88,33 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     {
         remaining = 0;
     }
-    struct timeval timeInterval = {.tv_sec = remaining, .tv_usec = 0}; // TODO cálculo de milisegundos?
+    struct timeval timeInterval = {.tv_sec = remaining, .tv_usec = 0};
 
     // chequear si algún jugador mandó movimiento
     int activity = select(maxfd + 1, &fds, NULL, NULL, &timeInterval);
 
-    if (activity == ERROR) {
+    if (activity == ERROR)
+    {
         perror("Error in select");
         exit(EXIT_FAILURE);
     }
 
     // si hubo devoluciones, agarro con round robin al primer fd con datos
-    if(activity > 0)
+    if (activity > 0)
     {
         int start = (lastProcessedPlayer++) % state->numPlayers;
 
-        for (int offset = 0; offset < state->numPlayers; offset++) {
-            
+        for (int offset = 0; offset < state->numPlayers; offset++)
+        {
+
             int i = (start + offset) % state->numPlayers;
 
-            if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds)) {
-                
+            if (!state->players[i].isBlocked && FD_ISSET(pipesfd[i][PIPE_READ_END], &fds))
+            {
+
                 unsigned char move;
-                if (read(pipesfd[i][PIPE_READ_END], &move, sizeof(move)) == ERROR) {
+                if (read(pipesfd[i][PIPE_READ_END], &move, sizeof(move)) == ERROR)
+                {
                     perror("Error in read");
                     exit(EXIT_FAILURE);
                 }
@@ -123,26 +130,27 @@ PlayerMove waitPlayerMove(GameState * state, int pipesfd[][2], int timeout, time
     return toReturn;
 }
 
-bool updateBlockedPlayers(GameState * state)
+bool updateBlockedPlayers(GameState *state)
 {
     int xValue;
     int yValue;
 
     bool allPlayersBlocked = true;
-    
-    for(int playerIndex = 0; playerIndex < state->numPlayers; playerIndex++)
+
+    for (int playerIndex = 0; playerIndex < state->numPlayers; playerIndex++)
     {
         bool hasValidMove = false;
 
-        for(int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++)
         {
             xValue = state->players[playerIndex].x + columnMov[i];
             yValue = state->players[playerIndex].y + rowMov[i];
 
-            if(xValue<state->width && yValue<state->height && xValue>=0 && yValue>=0)
+            if (xValue < state->width && yValue < state->height && xValue >= 0 && yValue >= 0)
             {
                 // si tiene al menos un movimiento válido
-                if(state->board[state->width * yValue + xValue] > 0){
+                if (state->board[state->width * yValue + xValue] > 0)
+                {
                     allPlayersBlocked = false;
                     hasValidMove = true;
                     break;
@@ -151,7 +159,7 @@ bool updateBlockedPlayers(GameState * state)
         }
 
         // si no tiene movimientos diponible, bloquear al jugador
-        if(!hasValidMove)
+        if (!hasValidMove)
         {
             state->players[playerIndex].isBlocked = true;
         }
@@ -160,9 +168,10 @@ bool updateBlockedPlayers(GameState * state)
     return allPlayersBlocked;
 }
 
-void blockAllPlayers(GameState * state)
+void blockAllPlayers(GameState *state)
 {
-    for (int i = 0; i < state->numPlayers; i++) {
+    for (int i = 0; i < state->numPlayers; i++)
+    {
         state->players[i].isBlocked = true;
     }
 
