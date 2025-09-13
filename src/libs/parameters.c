@@ -130,7 +130,6 @@ void printParams(MasterParameters params)
     }
 
     sleep(2);
-
-    printf("\033[H\033[J");
-    system("clear");
+    printf("\033[H\033[J"); // Limpiar la pantalla
+    fflush(stdout);
 }

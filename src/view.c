@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
         // esperar aviso de master.c
         viewWaitSync(sync);
 
-        printf("\033[H\033[J"); // Limpiar la terminal
+        printf("\033[H");     // Mover el cursor al principio, para sobreescribir sobre el tablero antiguo
         printf("\n");
 
         Player *leaderboard[state->numPlayers];
