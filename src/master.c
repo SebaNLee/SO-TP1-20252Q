@@ -126,11 +126,11 @@ int main(int argc, char const *argv[])
         // wait de view (para que no quede zombie)
         waitView(viewPID);
     }
-    // wait de players (para que no queden zombies)
-    waitPlayers(state);
-
     // libero pipes
     freePipes(pipesfd, state->numPlayers);
+
+    // wait de players (para que no queden zombies)
+    waitPlayers(state);
 
     freeGameSync(sync);
 
